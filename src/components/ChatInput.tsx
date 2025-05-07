@@ -1,4 +1,3 @@
-// src/components/ChatInput.tsx
 import React, { useRef, useState, ChangeEvent, KeyboardEvent } from 'react';
 import { FaPaperPlane, FaPaperclip, FaSpinner } from 'react-icons/fa';
 import FilePreview from './FilePreview';

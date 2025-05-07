@@ -1,4 +1,3 @@
-// src/components/ChatHistory.tsx
 import React from 'react';
 import { ChatSession } from '@/lib/types';
 import { FaTrash } from 'react-icons/fa';
@@ -31,8 +30,8 @@ const ChatHistory: React.FC<Props> = ({ history, currentChatId, onLoadChat, onDe
                 >
                   <span
                     onClick={() => onLoadChat(chat.id)}
-                    className="truncate flex-grow mr-2"
-                    title={chat.title} // Show full title on hover
+                    className="line-clamp-1 flex-grow mr-2"
+                    title={chat.title}
                   >
                     {chat.title || `Chat from ${new Date(chat.lastUpdated).toLocaleDateString()}`}
                   </span>

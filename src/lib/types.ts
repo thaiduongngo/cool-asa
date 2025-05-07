@@ -1,4 +1,3 @@
-// src/lib/types.ts
 import { Part } from "@google/generative-ai";
 
 export declare type Role = "user" | "model" | "system";

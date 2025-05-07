@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css"; // Ensure Tailwind is imported
+import { METADATA } from "@/lib/metadata"
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ASA",
-  description: "ASA AI Chatbot Application",
+  title: METADATA.title,
+  description: METADATA.description,
 };
 
 export default function RootLayout({

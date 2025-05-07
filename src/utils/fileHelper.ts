@@ -1,7 +1,6 @@
-// src/utils/fileHelper.ts
 import { ApiFileData } from '@/lib/types';
 
-export const MAX_FILE_SIZE_MB = 20; // Example limit: 20MB
+export const MAX_FILE_SIZE_MB = 15; // Example limit: 15MB
 export const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
 
 export const fileToBase64 = (file: File): Promise<string> => {

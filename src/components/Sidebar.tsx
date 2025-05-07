@@ -1,9 +1,10 @@
-// src/components/Sidebar.tsx
 import React from 'react';
 import { FaPlus, FaBars, FaTimes } from 'react-icons/fa';
 import RecentPrompts from './RecentPrompts';
 import ChatHistory from './ChatHistory';
 import { RecentPrompt, ChatSession } from '@/lib/types';
+import { METADATA } from '@/lib/metadata'
+
 
 interface Props {
   recentPrompts: RecentPrompt[];
@@ -93,7 +94,7 @@ const Sidebar: React.FC<Props> = ({
 
         {/* Footer */}
         <div className="mt-auto text-center text-xs text-gray-400">
-          ASA
+          <span>{METADATA.title} v{METADATA.version} ©{METADATA.author}</span>
         </div>
       </aside>
     </>

@@ -1,4 +1,3 @@
-// src/components/FilePreview.tsx
 import React, { useState, useEffect } from 'react';
 import { AttachedFile } from '@/lib/types';
 import { FaFilePdf, FaImage, FaTimes } from 'react-icons/fa';
@@ -44,7 +43,7 @@ const FilePreview: React.FC<Props> = ({ attachedFile, onRemove }) => {
         ) : (
           <FaImage className="w-6 h-6 text-gray-500 flex-shrink-0" /> // Generic file icon or specific ones
         )}
-        <span className="text-gray-500 truncate" title={file.name}>
+        <span className="text-gray-500 line-clamp-1" title={file.name}>
           {file.name}
         </span>
         <span className="text-gray-500 text-xs whitespace-nowrap">
