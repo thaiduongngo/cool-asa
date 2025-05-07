@@ -1,5 +1,4 @@
-// src/app/page.tsx
-'use client'; // This directive marks the component as a Client Component
+'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';

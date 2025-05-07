@@ -1,37 +1,28 @@
-// src/components/ChatMessage.tsx
 import React from 'react';
-import { Message } from '@/lib/types';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Message, Part } from '@/lib/types';
 import { FaUser, FaRobot } from 'react-icons/fa';
-import { Part } from "@google/generative-ai";
 
 interface Props {
   message: Message;
 }
 
-// Helper to render content which might be string or Part[]
-const renderContent = (content: string | Part[]) => {
+// Helper to extract text content from string or Part[] for Markdown rendering
+const getTextForMarkdown = (content: string | Part[]): string => {
   if (typeof content === 'string') {
-    // Basic rendering for string content, handle newlines
-    return content.split('\n').map((line, index) => (
-      <React.Fragment key={index}>
-        {line}
-        <br />
-      </React.Fragment>
-    ));
+    return content;
   }
-  // For Part[], render the text parts (ignore inlineData for display here)
-  // A more sophisticated renderer could display image previews etc. if needed
-  return content.map((part, index) => {
-    if ('text' in part) {
-      return <span key={index}>{part.text}</span>;
-    }
-    return null; // Don't render non-text parts directly in chat bubble
-  });
+  // For Part[], concatenate text from text parts
+  return content
+    .filter(part => 'text' in part && typeof part.text === 'string')
+    .map(part => (part as { text: string }).text) // Type assertion
+    .join(''); // Join text parts, model might send multiple text parts
 };
-
 
 const ChatMessage: React.FC<Props> = ({ message }) => {
   const isUser = message.role === 'user';
+  const markdownText = getTextForMarkdown(message.content);
 
   return (
     <div className={`flex gap-3 my-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -41,21 +32,45 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
         </div>
       )}
       <div
-        className={`max-w-[75%] p-3 rounded-lg shadow ${isUser ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
+        className={`max-w-[85%] md:max-w-[75%] p-3 rounded-lg shadow ${isUser ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800' // Changed model bg for better prose contrast
           }`}
       >
         {message.fileInfo && (
-          <div className="mb-2 text-xs italic opacity-80 border-b pb-1 border-gray-400">
+          <div className={`mb-2 text-xs italic opacity-80 border-b pb-1 ${isUser ? 'border-blue-300' : 'border-gray-300'}`}>
             Attached: {message.fileInfo.name} ({message.fileInfo.type})
           </div>
         )}
-        <div className="prose prose-sm max-w-none text-inherit break-words whitespace-pre-wrap">
-          {renderContent(message.content)}
+        <div
+          className={`
+                prose prose-sm max-w-none
+                ${isUser ? 'prose-invert' : ''} // Invert prose colors for dark user bubble
+                break-words // Keep break-words
+            `}
+        >
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            // Customize rendering of specific elements if needed
+            components={{
+              // Example: Style links
+              a: ({ node, ...props }) => <a className="text-blue-400 hover:underline" {...props} />,
+              // Example: Style code blocks (Tailwind prose should handle this well by default)
+              // pre: ({node, ...props}) => <pre className="bg-gray-800 text-white p-2 rounded" {...props} />,
+              // code: ({node, inline, ...props}) => {
+              //   return inline ? (
+              //     <code className="bg-gray-200 text-red-500 px-1 rounded" {...props} />
+              //   ) : (
+              //     <code className="block whitespace-pre-wrap" {...props} />
+              //   );
+              // }
+            }}
+          >
+            {markdownText}
+          </ReactMarkdown>
         </div>
-        {/* Optional: Timestamp */}
-        {/* <div className="text-xs opacity-60 mt-1 text-right">
-             {new Date(message.timestamp).toLocaleTimeString()}
-         </div> */}
+        {/* Timestamp */}
+        <div className={`text-xs opacity-60 mt-1 text-right ${isUser ? 'text-blue-200' : 'text-gray-500'}`}>
+          {new Date(message.timestamp).toLocaleTimeString()}
+        </div>
       </div>
       {isUser && (
         <div className="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white">

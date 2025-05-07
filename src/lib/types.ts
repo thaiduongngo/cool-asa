@@ -1,9 +1,11 @@
 // src/lib/types.ts
 import { Part } from "@google/generative-ai";
 
+export declare type Role = "user" | "model" | "system";
+
 export interface Message {
   id: string;
-  role: 'user' | 'model' | 'system';
+  role: Role;
   content: string | Part[];
   timestamp: number;
   fileInfo?: { name: string; type: string };
@@ -38,8 +40,10 @@ export interface AttachedFile {
 export interface Prompt {
   prompt: string;
   history: {
-    role: 'user' | 'model' | 'system',
+    role: Role,
     parts: Part[]
   }[],
   fileData?: ApiFileData
 }
+
+export type { Part }

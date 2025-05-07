@@ -91,10 +91,10 @@ const Sidebar: React.FC<Props> = ({
           />
         </div>
 
-        {/* Optional Footer */}
-        {/* <div className="mt-auto text-center text-xs text-gray-400">
-             Gemini Clone
-         </div> */}
+        {/* Footer */}
+        <div className="mt-auto text-center text-xs text-gray-400">
+          ASA
+        </div>
       </aside>
     </>
   );
