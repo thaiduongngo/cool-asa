@@ -12,11 +12,11 @@ interface Props {
 
 const ChatHistory: React.FC<Props> = ({ history, currentChatId, onLoadChat, onDeleteChat }) => {
   if (history.length === 0) {
-    return null; // Don't render if empty
+    return null;
   }
 
   return (
-    <div className="mb-6">
+    <div>
       <h3 className="text-sm font-semibold text-gray-500 mb-2 px-2">Chat History</h3>
       <ul className="space-y-1">
         {history.map((chat) => (

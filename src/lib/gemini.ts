@@ -15,7 +15,7 @@ if (!apiKey) {
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const generationConfig = {
-  temperature: 1,
+  temperature: 0,
   topP: 0.95,
   maxOutputTokens: 65536,
 };
@@ -31,7 +31,7 @@ const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash-preview-04-17",
   safetySettings: safetySettings,
   generationConfig: generationConfig,
-  systemInstruction: "Trả lời hay hồi đáp một cách chính xác bằng tiếng Việt.",
+  systemInstruction: "Trả lời hay hồi đáp một bằng tiếng Việt.",
 });
 
 export { model };

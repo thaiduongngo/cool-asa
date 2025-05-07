@@ -1,15 +1,12 @@
-// src/app/api/chat/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { model } from '@/lib/gemini';
 import { Part } from '@google/generative-ai';
-import { ApiFileData } from '@/lib/types';
-
-export const runtime = 'edge'; // Use Edge Runtime for streaming
+import { Prompt } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { prompt, history, fileData }: { prompt: string; history: { role: 'user' | 'model', parts: Part[] }[], fileData?: ApiFileData } = body;
+    const { prompt, history, fileData }: Prompt = body;
 
     if (!prompt && !fileData) {
       return NextResponse.json({ error: 'Prompt or file is required' }, { status: 400 });

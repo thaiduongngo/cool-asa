@@ -4,7 +4,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Part } from "@google/generative-ai";
-
 import Sidebar from '@/components/Sidebar';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
@@ -241,7 +240,7 @@ export default function ChatPage() {
       || "Untitled Chat"; // Fallback title
 
     const session: ChatSession = {
-      id: currentChatId || uuidv4(), // Use current ID or generate new if it's a new chat
+      id: chatTitle, // Use current ID or generate new if it's a new chat
       title: chatTitle,
       messages: finalMessages,
       lastUpdated: Date.now(),

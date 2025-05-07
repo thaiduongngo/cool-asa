@@ -3,17 +3,15 @@ import { Part } from "@google/generative-ai";
 
 export interface Message {
   id: string;
-  role: "user" | "model";
-  // Content can be simple text or complex parts for multimodal input
+  role: 'user' | 'model' | 'system';
   content: string | Part[];
   timestamp: number;
-  // Optional: Store file info if message originated from file upload
   fileInfo?: { name: string; type: string };
 }
 
 export interface ChatSession {
   id: string;
-  title: string; // e.g., first user message
+  title: string;
   messages: Message[];
   lastUpdated: number;
 }
@@ -34,4 +32,14 @@ export interface ApiFileData {
 export interface AttachedFile {
   file: File;
   previewUrl?: string; // For images
+}
+
+// Type for prompt
+export interface Prompt {
+  prompt: string;
+  history: {
+    role: 'user' | 'model' | 'system',
+    parts: Part[]
+  }[],
+  fileData?: ApiFileData
 }
