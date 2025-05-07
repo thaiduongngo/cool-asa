@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { model } from '@/lib/gemini';
+import { model } from '@/lib/genAI';
 import { Part } from '@google/generative-ai';
 import { Prompt } from '@/lib/types';
 

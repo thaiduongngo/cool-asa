@@ -1,4 +1,3 @@
-// src/lib/gemini.ts
 import {
   GoogleGenerativeAI,
   HarmCategory,
@@ -31,7 +30,7 @@ const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash-preview-04-17",
   safetySettings: safetySettings,
   generationConfig: generationConfig,
-  systemInstruction: "Trả lời hay hồi đáp một bằng tiếng Việt.",
+  systemInstruction: "Trả lời chi tiết bằng tiếng Việt.",
 });
 
 export { model };
