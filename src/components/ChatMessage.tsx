@@ -54,7 +54,7 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
               // Example: Style links
               a: ({ node, ...props }) => <a className="text-blue-400 hover:underline" {...props} />,
               // Example: Style code blocks (Tailwind prose should handle this well by default)
-              // pre: ({node, ...props}) => <pre className="bg-gray-800 text-white p-2 rounded" {...props} />,
+              pre: ({ node, ...props }) => <pre className="bg-gray-800 text-white p-2 rounded" {...props} />,
               // code: ({node, inline, ...props}) => {
               //   return inline ? (
               //     <code className="bg-gray-200 text-red-500 px-1 rounded" {...props} />

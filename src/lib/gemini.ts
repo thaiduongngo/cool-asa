@@ -30,7 +30,7 @@ const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash-preview-04-17",
   safetySettings: safetySettings,
   generationConfig: generationConfig,
-  systemInstruction: "Trả lời chi tiết bằng tiếng Việt.",
+  systemInstruction: `Trả lời chi tiết bằng tiếng Việt. Responses are rendered in markdown with clear indents and highlights.`,
 });
 
 export { model };
