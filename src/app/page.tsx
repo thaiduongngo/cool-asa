@@ -1,8 +1,10 @@
+// src/app/page.tsx
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Part } from "@/lib/types";
+
 import Sidebar from '@/components/Sidebar';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
@@ -10,9 +12,7 @@ import useLocalStorage from '@/hooks/useLocalStorage';
 import { Message, ChatSession, RecentPrompt, ApiFileData, AttachedFile } from '@/lib/types';
 import { prepareFileDataForApi } from '@/utils/fileHelper';
 
-
 const MAX_RECENT_PROMPTS = 5;
-const MAX_CHAT_HISTORY = 5;
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -22,71 +22,91 @@ export default function ChatPage() {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
 
-  // Persistence using custom hook
   const [recentPrompts, setRecentPrompts] = useLocalStorage<RecentPrompt[]>('recentPrompts', []);
-  const [chatHistory, setChatHistory] = useLocalStorage<ChatSession[]>('chatHistory', []);
+  const [chatHistory, setChatHistory] = useState<ChatSession[]>([]); // No longer useLocalStorage
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true); // For loading initial history
 
-  // Sidebar state for mobile
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default closed on mobile
-
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // --- Effects ---
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Load initial chat or create a new one
-  useEffect(() => {
-    if (!currentChatId && chatHistory.length > 0) {
-      // Optional: Load the most recent chat on initial load
-      // handleLoadChat(chatHistory[0].id);
-    } else if (!currentChatId) {
-      startNewChat(); // Ensure a chat exists if history is empty
-    }
-    // Check screen size on initial load for sidebar default
-    const checkScreenSize = () => {
-      if (window.innerWidth >= 768) { // Tailwind's md breakpoint
-        setIsSidebarOpen(true);
-      } else {
-        setIsSidebarOpen(false);
+  // --- Fetch Initial Chat History ---
+  const fetchChatHistory = useCallback(async () => {
+    setIsHistoryLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/chat/history');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to fetch history" }));
+        throw new Error(errorData.error || `Failed to fetch chat history: ${response.statusText}`);
       }
+      const data: ChatSession[] = await response.json();
+      setChatHistory(data);
+      // Optional: Load the most recent chat if history is not empty and no chat is active
+      if (data.length > 0 && !currentChatId) {
+        // handleLoadChat(data[0].id); // Or simply let user pick
+      } else if (data.length === 0 && !currentChatId) {
+        startNewChat(false); // Start a new chat session if history is empty, don't clear if already new
+      }
+    } catch (err: any) {
+      console.error('Error fetching chat history:', err);
+      setError(`Could not load chat history: ${err.message}`);
+      // Proceed with an empty history if fetch fails
+      setChatHistory([]);
+      startNewChat(false);
+    } finally {
+      setIsHistoryLoading(false);
+    }
+  }, [currentChatId]); // Add currentChatId to dependencies if its change should trigger reload
+
+  useEffect(() => {
+    fetchChatHistory();
+
+    const checkScreenSize = () => {
+      setIsSidebarOpen(window.innerWidth >= 768);
     };
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
-  }, []); // Run only once on mount
+  }, [fetchChatHistory]); // fetchChatHistory is memoized
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
 
-  // --- Core Chat Logic ---
+  // --- Helper Functions (Modified for API calls) ---
+  const addRecentPrompt = useCallback((promptText: string) => {
+    setRecentPrompts(prev => {
+      const newPrompt: RecentPrompt = { id: uuidv4(), text: promptText };
+      const filtered = prev.filter(p => p.text !== promptText);
+      return [newPrompt, ...filtered].slice(0, MAX_RECENT_PROMPTS);
+    });
+  }, [setRecentPrompts]);
 
+  // --- Core Chat Logic (handleSendMessage) ---
   const handleSendMessage = useCallback(async () => {
     const trimmedInput = input.trim();
-    if (!trimmedInput && !attachedFile) return; // Need either text or a file
+    if (!trimmedInput && !attachedFile) return;
 
     setIsLoading(true);
     setError(null);
 
     const userMessageId = uuidv4();
     let fileDataForApi: ApiFileData | null = null;
-    let userMessageContent: string | Part[] = trimmedInput; // Default to text
+    let userMessageContent: string | Part[] = trimmedInput;
 
-    // --- Prepare File Data (if attached) ---
     if (attachedFile) {
       fileDataForApi = await prepareFileDataForApi(attachedFile.file);
       if (!fileDataForApi) {
         setError("Error processing file. Please try again.");
         setIsLoading(false);
-        return; // Stop if file processing failed
+        return;
       }
-
-      // Construct multimodal content part
-      const filePart: Part = {
-        inlineData: { mimeType: fileDataForApi.mimeType, data: fileDataForApi.base64Data }
-      };
-      userMessageContent = trimmedInput ? [{ text: trimmedInput }, filePart] : [filePart];
+      // Convert @google/generative-ai Part to local Part type
+      const filePart: Part = { inlineData: { mimeType: fileDataForApi.mimeType, data: fileDataForApi.base64Data } };
+      userMessageContent = trimmedInput
+        ? [{ text: trimmedInput } as Part, filePart]
+        : [filePart];
     }
 
     const userMessage: Message = {
@@ -94,132 +114,78 @@ export default function ChatPage() {
       role: 'user',
       content: userMessageContent,
       timestamp: Date.now(),
-      ...(attachedFile && { fileInfo: { name: attachedFile.file.name, type: attachedFile.file.type } }) // Add file info if present
+      ...(attachedFile && { fileInfo: { name: attachedFile.file.name, type: attachedFile.file.type } })
     };
 
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
 
-    // --- Add to Recent Prompts ---
-    if (trimmedInput) {
-      addRecentPrompt(trimmedInput);
-    }
-
-    // --- Clear Input ---
+    if (trimmedInput) addRecentPrompt(trimmedInput);
     setInput('');
-    setAttachedFile(null); // Clear attached file after sending
+    setAttachedFile(null);
 
-    // --- Prepare history for API ---
-    const apiHistory = messages
-      // Filter out any potential incomplete model messages from previous runs if needed
-      // .filter(msg => msg.role === 'user' || (msg.role === 'model' && msg.content))
-      .map(msg => ({
-        role: msg.role,
-        parts: typeof msg.content === 'string' ? [{ text: msg.content }] : msg.content // Ensure content is always Part[] for API history
-      }));
+    const apiHistory = messages.map(msg => ({
+      role: msg.role,
+      parts: typeof msg.content === 'string' ? [{ text: msg.content }] : msg.content
+    }));
 
-
-    // --- Call API and Handle Stream ---
-    let streamEnded = false; // Flag to track if stream finished properly
+    let streamEnded = false;
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: trimmedInput, // Send original trimmed input text
-          history: apiHistory,
-          fileData: fileDataForApi // Send prepared file data
-        }),
+        body: JSON.stringify({ prompt: trimmedInput, history: apiHistory, fileData: fileDataForApi }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
         throw new Error(errorData.error || `API request failed with status ${response.status}`);
       }
+      if (!response.body) throw new Error('Response body is null');
 
-      if (!response.body) {
-        throw new Error('Response body is null');
-      }
-
-      // --- Stream Processing ---
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let modelResponse = '';
       const modelMessageId = uuidv4();
-
-      // Add a placeholder for the model's message
       setMessages(prev => [...prev, { id: modelMessageId, role: 'model', content: '...', timestamp: Date.now() }]);
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) {
-          streamEnded = true;
-          break; // Exit loop when stream is finished
-        }
-
-        const chunk = decoder.decode(value, { stream: true }); // stream: true handles multi-byte chars potentially split across chunks
-
-        // Check for custom error signal from API route
+        if (done) { streamEnded = true; break; }
+        const chunk = decoder.decode(value, { stream: true });
         if (chunk.includes('STREAM_ERROR:')) {
           const errorMessage = chunk.split('STREAM_ERROR:')[1].trim();
-          console.error("Streaming Error:", errorMessage);
           setError(`Error during streaming: ${errorMessage}`);
-          // Remove placeholder or update it with error? Choose one.
           setMessages(prev => prev.filter(msg => msg.id !== modelMessageId));
-          streamEnded = true; // Mark as ended even on error
-          break; // Stop processing on stream error
+          streamEnded = true; break;
         }
-
         modelResponse += chunk;
-
-        // Update the model message content progressively
-        setMessages(prev =>
-          prev.map(msg =>
-            msg.id === modelMessageId ? { ...msg, content: modelResponse } : msg
-          )
-        );
+        setMessages(prev => prev.map(msg => msg.id === modelMessageId ? { ...msg, content: modelResponse } : msg));
       }
 
-      // Final cleanup if stream ended without error signal
       if (streamEnded && !error) {
-        // Ensure the final complete message is set
         const finalModelMessage: Message = { id: modelMessageId, role: 'model', content: modelResponse, timestamp: Date.now() };
         setMessages(prev => {
           const finalMessages = prev.map(msg => msg.id === modelMessageId ? finalModelMessage : msg);
-          // Save chat AFTER the final message is set
+          // IMPORTANT: Pass the final messages to saveChatSession
           saveChatSession(finalMessages);
           return finalMessages;
         });
       } else if (!streamEnded) {
-        console.error("Stream ended unexpectedly or timed out");
         setError("The response stream ended unexpectedly.");
-        // Decide how to handle incomplete messages (e.g., remove placeholder)
         setMessages(prev => prev.filter(msg => msg.id !== modelMessageId));
       }
-
-
     } catch (err: any) {
       console.error("Send Message Error:", err);
       setError(err.message || 'An unexpected error occurred.');
-      // Clean up placeholder if an error occurs before or during streaming start
       if (!streamEnded) {
-        setMessages(prev => prev.filter(msg => msg.role === 'user')); // Remove only user message maybe? Or keep user, remove potential placeholder
+        setMessages(prev => prev.filter(msg => msg.role === 'user'));
       }
     } finally {
       setIsLoading(false);
     }
-  }, [input, messages, attachedFile, currentChatId, chatHistory, setChatHistory, setRecentPrompts]); // Added dependencies
-
-  // --- Helper Functions ---
-
-  const addRecentPrompt = (promptText: string) => {
-    setRecentPrompts(prev => {
-      const newPrompt: RecentPrompt = { id: uuidv4(), text: promptText };
-      // Avoid duplicates and limit size
-      const filtered = prev.filter(p => p.text !== promptText);
-      return [newPrompt, ...filtered].slice(0, MAX_RECENT_PROMPTS);
-    });
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input, messages, attachedFile, currentChatId, /* Removed chatHistory and setChatHistory */ addRecentPrompt /* Added addRecentPrompt */]);
 
   const handleDeletePrompt = (promptId: string) => {
     setRecentPrompts(prev => prev.filter(p => p.id !== promptId));
@@ -227,99 +193,120 @@ export default function ChatPage() {
 
   const handleSelectPrompt = (promptText: string) => {
     setInput(promptText);
-    // Optionally focus the input field here
   };
 
-  const saveChatSession = (finalMessages: Message[]) => {
-    if (finalMessages.length === 0) return; // Don't save empty chats
+  const saveChatSession = async (finalMessages: Message[]) => {
+    if (finalMessages.length === 0) return;
 
     const chatTitle = typeof finalMessages[0].content === 'string'
-      ? finalMessages[0].content.substring(0, 50) // First 50 chars of first user message
-      : finalMessages[0].fileInfo?.name // Or file name if first message was file-only
-      || "Untitled Chat"; // Fallback title
+      ? finalMessages[0].content.substring(0, 50)
+      : finalMessages[0].fileInfo?.name
+      || "Untitled Chat";
 
-    const session: ChatSession = {
-      id: chatTitle, // Use current ID or generate new if it's a new chat
+    const sessionToSave: Partial<ChatSession> = { // id might be undefined for new chat
+      id: currentChatId || chatTitle, // Send undefined if new, API will generate ID
       title: chatTitle,
       messages: finalMessages,
-      lastUpdated: Date.now(),
+      lastUpdated: Date.now(), // API will also set this, but good to have client-side too
     };
 
-    setChatHistory(prev => {
-      const existingIndex = prev.findIndex(c => c.id === session.id);
-      let updatedHistory;
-      if (existingIndex > -1) {
-        // Update existing chat
-        updatedHistory = [...prev];
-        updatedHistory[existingIndex] = session;
-      } else {
-        // Add new chat
-        updatedHistory = [session, ...prev];
+    try {
+      const response = await fetch('/api/chat/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sessionToSave),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to save chat session');
       }
-      // Sort by lastUpdated (most recent first) and limit size
-      return updatedHistory
-        .sort((a, b) => b.lastUpdated - a.lastUpdated)
-        .slice(0, MAX_CHAT_HISTORY);
-    });
+      const savedSession: ChatSession = await response.json();
 
-    // Ensure the currentChatId is set for the saved session
-    if (!currentChatId) {
-      setCurrentChatId(session.id);
+      // Update client-side chat history
+      setChatHistory(prev => {
+        const existingIndex = prev.findIndex(c => c.id === savedSession.id);
+        let updatedHistory;
+        if (existingIndex > -1) {
+          updatedHistory = prev.map(c => c.id === savedSession.id ? savedSession : c);
+        } else {
+          updatedHistory = [savedSession, ...prev];
+        }
+        return updatedHistory
+          .sort((a, b) => b.lastUpdated - a.lastUpdated)
+          .slice(0, 50); // Keep a larger buffer client-side, server enforces strict MAX_CHAT_HISTORY
+      });
+
+      if (!currentChatId) { // If it was a new chat, set its ID now
+        setCurrentChatId(savedSession.id);
+      }
+    } catch (err: any) {
+      console.error('Error saving chat session:', err);
+      setError(`Failed to save chat: ${err.message}`);
     }
   };
 
-  const startNewChat = () => {
+  const startNewChat = (clearCurrentId = true) => { // Added param to control clearing ID
     setMessages([]);
     setInput('');
-    setCurrentChatId(null); // Indicate it's a new chat until first message is sent
+    if (clearCurrentId) setCurrentChatId(null);
     setError(null);
     setIsLoading(false);
     setAttachedFile(null);
-    if (window.innerWidth < 768) setIsSidebarOpen(false); // Close sidebar on mobile for new chat
-    console.log("Starting new chat");
+    if (window.innerWidth < 768) setIsSidebarOpen(false);
+    console.log("Starting new chat session");
   };
 
   const handleLoadChat = (chatId: string) => {
+    // Option 1: Find in existing client-side history (if up-to-date)
     const chatToLoad = chatHistory.find(c => c.id === chatId);
     if (chatToLoad) {
       setMessages(chatToLoad.messages);
       setCurrentChatId(chatToLoad.id);
-      setInput(''); // Clear input when loading
+      setInput('');
       setError(null);
       setIsLoading(false);
       setAttachedFile(null);
-      if (window.innerWidth < 768) setIsSidebarOpen(false); // Close sidebar on mobile
-      console.log("Loaded chat:", chatId);
+      if (window.innerWidth < 768) setIsSidebarOpen(false);
     } else {
-      console.error("Chat not found:", chatId);
-      setError("Could not load the selected chat.");
+      // Option 2: Fetch from server if not found (or always fetch for consistency)
+      // This part could be enhanced to fetch `/api/chat/history/[chatId]`
+      console.warn(`Chat ${chatId} not found in local history. Consider fetching.`);
+      setError("Chat not found. It might have been deleted or an error occurred.");
+      // For now, just log. A full fetch would be:
+      // async function fetchAndLoad() { try { const res = await fetch(...); ... } catch { ... } }
+      // fetchAndLoad();
     }
   };
 
-  const handleDeleteChat = (chatId: string) => {
-    setChatHistory(prev => prev.filter(c => c.id !== chatId));
-    // If the deleted chat was the current one, start a new chat
-    if (currentChatId === chatId) {
-      startNewChat();
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      const response = await fetch(`/api/chat/history/${chatId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to delete chat session');
+      }
+      setChatHistory(prev => prev.filter(c => c.id !== chatId));
+      if (currentChatId === chatId) {
+        startNewChat();
+      }
+    } catch (err: any) {
+      console.error('Error deleting chat session:', err);
+      setError(`Failed to delete chat: ${err.message}`);
     }
   };
 
   const handleAttachFile = (file: File) => {
-    // We only allow one file, so replace if one exists
     setAttachedFile({ file });
   };
-
   const handleRemoveFile = () => {
     setAttachedFile(null);
   };
-
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
-  // --- Render ---
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Sidebar */}
       <Sidebar
         recentPrompts={recentPrompts}
         chatHistory={chatHistory}
@@ -333,32 +320,35 @@ export default function ChatPage() {
         toggleSidebar={toggleSidebar}
       />
 
-      {/* Main Chat Area */}
-      <main className={`flex flex-col flex-1 h-full transition-all duration-300 ease-in-out ${isSidebarOpen ? 'md:ml-0' : 'md:ml-0'} `}>
-        {/* Chat Messages */}
+      <main className={`flex flex-col flex-1 h-full transition-all duration-300 ease-in-out`}>
         <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-white shadow-inner">
+          {isHistoryLoading && messages.length === 0 && ( // Show loading indicator for initial history
+            <div className="text-center py-10 text-gray-500">Loading chat history...</div>
+          )}
+          {!isHistoryLoading && chatHistory.length === 0 && messages.length === 0 && !currentChatId && (
+            <div className="text-center py-10 text-gray-500">
+              No chats yet. Start a new conversation!
+            </div>
+          )}
+
           {messages.map((message) => (
             <ChatMessage key={message.id} message={message} />
           ))}
-          {/* Loading Indicator within chat */}
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
             <div className="flex justify-start">
-              {/* Placeholder while waiting for the stream to start */}
               <div className="p-3 rounded-lg shadow bg-gray-200 text-gray-500 italic">
                 Thinking...
               </div>
             </div>
           )}
-          {/* Error Display */}
           {error && (
             <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded-md text-sm">
               <strong>Error:</strong> {error}
             </div>
           )}
-          <div ref={messagesEndRef} /> {/* Anchor for scrolling */}
+          <div ref={messagesEndRef} />
         </div>
 
-        {/* Chat Input Area */}
         <ChatInput
           input={input}
           onInputChange={setInput}
