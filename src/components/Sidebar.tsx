@@ -50,21 +50,11 @@ const Sidebar: React.FC<Props> = ({
         ></div>
       )}
 
-
       {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 h-full z-40 bg-gray-100 border-r border-gray-200 w-64 md:w-72 lg:w-80 p-4 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0
          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        {/* Close button inside sidebar for mobile */}
-        <button
-          onClick={toggleSidebar}
-          className="absolute top-4 right-4 md:hidden p-1 text-gray-500 hover:text-gray-700"
-          aria-label="Close sidebar"
-        >
-          <FaTimes size={20} />
-        </button>
-
         {/* New Chat Button */}
         <button
           onClick={onNewChat}
