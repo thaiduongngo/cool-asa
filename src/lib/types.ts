@@ -1,6 +1,46 @@
-import { Part } from "@google/generative-ai";
-
 export declare type Role = "user" | "model" | "system";
+
+export declare interface FileData {
+  mimeType: string;
+  fileUri: string;
+}
+
+export declare interface GenerativeContentBlob {
+  mimeType: string;
+  data: string;
+}
+
+export declare interface TextPart {
+  text: string;
+  inlineData?: never;
+  functionCall?: never;
+  functionResponse?: never;
+  fileData?: never;
+  executableCode?: never;
+  codeExecutionResult?: never;
+}
+
+export declare interface FileDataPart {
+  text?: never;
+  inlineData?: never;
+  functionCall?: never;
+  functionResponse?: never;
+  fileData: FileData;
+  executableCode?: never;
+  codeExecutionResult?: never;
+}
+
+export declare interface InlineDataPart {
+  text?: never;
+  inlineData: GenerativeContentBlob;
+  functionCall?: never;
+  functionResponse?: never;
+  fileData?: never;
+  executableCode?: never;
+  codeExecutionResult?: never;
+}
+
+export declare type Part = TextPart | InlineDataPart | FileDataPart;
 
 export interface Message {
   id: string;
@@ -44,5 +84,3 @@ export interface Prompt {
   }[],
   fileData?: ApiFileData
 }
-
-export type { Part }

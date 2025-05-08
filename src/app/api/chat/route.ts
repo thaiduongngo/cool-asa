@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { model } from '@/lib/genAI';
-import { Part } from '@google/generative-ai';
-import { Prompt } from '@/lib/types';
+import { Prompt, Part } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
   try {
