@@ -11,13 +11,13 @@ interface Props {
 const RecentPrompts: React.FC<Props> = ({ prompts, onSelectPrompt, onDeletePrompt }) => {
   return (
     <div className="mb-6">
-      <h3 className="text-sm font-semibold text-gray-500 mb-2 px-2">Recent Prompts</h3>
+      <h3 className="text-sm font-semibold text-red-700 mb-2 px-2">Recent Prompts</h3>
       {prompts.length === 0 ?
         (<span className="mb-2 px-2 text-sm text-gray-400">No recent prompts.</span>) :
         (
           <ul className="space-y-1">
             {prompts.map((prompt) => (
-              <li key={prompt.id} className="group flex items-center justify-between p-2 rounded-md hover:bg-gray-200 cursor-pointer text-sm text-gray-700">
+              <li key={prompt.id} className="group flex items-center justify-between p-2 rounded-md hover:bg-red-100 hover:font-medium cursor-pointer text-sm text-gray-700">
                 <span
                   onClick={() => onSelectPrompt(prompt.text)}
                   className="line-clamp-1 flex-grow mr-2"

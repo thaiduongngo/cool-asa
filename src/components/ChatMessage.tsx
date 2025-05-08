@@ -27,16 +27,18 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
   return (
     <div className={`flex gap-3 my-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && (
-        <div className="flex-shrink-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
+        <div className="flex-shrink-0 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white">
           <FaRobot size={18} />
         </div>
       )}
       <div
-        className={`max-w-[85%] md:max-w-[75%] p-3 rounded-lg shadow ${isUser ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800' // Changed model bg for better prose contrast
+        className={`max-w-[85%] md:max-w-[75%] p-3 rounded-lg shadow ${isUser ?
+          'bg-red-600 text-white' :
+          'bg-gray-100 text-gray-800'
           }`}
       >
         {message.fileInfo && (
-          <div className={`mb-2 text-xs italic opacity-80 border-b pb-1 ${isUser ? 'border-blue-300' : 'border-gray-300'}`}>
+          <div className={`mb-2 text-xs italic opacity-80 border-b pb-1 ${isUser ? 'border-red-300' : 'border-gray-300'}`}>
             Attached: {message.fileInfo.name} ({message.fileInfo.type})
           </div>
         )}
@@ -52,7 +54,7 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
             // Customize rendering of specific elements if needed
             components={{
               // Example: Style links
-              a: ({ node, ...props }) => <a className="text-blue-400 hover:underline" {...props} />,
+              a: ({ node, ...props }) => <a className="text-red-400 hover:underline" {...props} />,
               // Example: Style code blocks (Tailwind prose should handle this well by default)
               pre: ({ node, ...props }) => <pre className="bg-gray-800 text-white p-2 rounded" {...props} />,
               // code: ({node, inline, ...props}) => {
@@ -68,16 +70,17 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
           </ReactMarkdown>
         </div>
         {/* Timestamp */}
-        <div className={`text-xs opacity-60 mt-1 text-right ${isUser ? 'text-blue-200' : 'text-gray-500'}`}>
+        <div className={`text-xs opacity-60 mt-1 text-right ${isUser ? 'text-red-200' : 'text-gray-500'}`}>
           {new Date(message.timestamp).toLocaleTimeString()}
         </div>
       </div>
       {isUser && (
-        <div className="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white">
+        <div className="flex-shrink-0 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white">
           <FaUser size={18} />
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 

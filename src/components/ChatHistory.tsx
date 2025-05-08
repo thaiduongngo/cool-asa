@@ -14,7 +14,7 @@ const ChatHistory: React.FC<Props> = ({ history, currentChatId, onLoadChat, onDe
 
   return (
     <div className="mb-6" >
-      <h3 className="text-sm font-semibold text-gray-500 mb-2 px-2">Chat History</h3>
+      <h3 className="text-sm font-semibold text-red-700 mb-2 px-2">Chat History</h3>
       {
         history.length === 0 ?
           (<span className="mb-2 px-2 text-sm text-gray-400">No chat history.</span>) :
@@ -24,7 +24,7 @@ const ChatHistory: React.FC<Props> = ({ history, currentChatId, onLoadChat, onDe
                 <li
                   key={chat.id}
                   className={`group flex items-center justify-between p-2 rounded-md cursor-pointer text-sm ${chat.id === currentChatId
-                    ? 'bg-blue-100 text-blue-800 font-medium'
+                    ? 'bg-red-100 text-red-800 font-medium'
                     : 'text-gray-700 hover:bg-gray-200'
                     }`}
                 >
