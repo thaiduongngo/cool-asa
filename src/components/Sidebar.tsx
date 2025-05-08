@@ -3,7 +3,7 @@ import { FaPlus, FaBars, FaTimes } from 'react-icons/fa';
 import RecentPrompts from './RecentPrompts';
 import ChatHistory from './ChatHistory';
 import { RecentPrompt, ChatSession } from '@/lib/types';
-import { METADATA } from '@/lib/metadata'
+import { METADATA } from '@/lib/constants'
 
 
 interface Props {
@@ -84,7 +84,7 @@ const Sidebar: React.FC<Props> = ({
 
         {/* Footer */}
         <div className="mt-auto text-center text-xs text-gray-400">
-          <span>{METADATA.title} v{METADATA.version} ©{METADATA.author}</span>
+          <span>{METADATA.application_name} v{METADATA.version} ©{METADATA.author}</span>
         </div>
       </aside>
     </>
