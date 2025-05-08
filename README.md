@@ -1,4 +1,5 @@
 # ASA AI Chatbot
+![alt text](ASA.png "ASA")
 A feature-rich chatbot application, similar to Google's Gemini, built with Next.js (App Router), TypeScript, and Tailwind CSS. It interacts with the Google Gemini API for multimodal chat capabilities, including text and file (image/PDF) inputs, and features real-time response streaming. Chat history is persisted using Redis.
 
 ## Features
