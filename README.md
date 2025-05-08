@@ -88,9 +88,13 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
 4.  **Ensure Redis is running:**
     If you're using a local Redis instance, make sure it's started. For example, with Docker:
     ```bash
-    docker run -d -p 6379:6379 --name my-redis redis
+    docker run -d --name redis -p 6379:6379 redis:<version>
     ```
-
+    Execute Redis client within Docker:
+    ```bash
+    docker exec -it redis redis-cli
+    ```
+    https://redis.io/docs/latest/operate/oss_and_stack/install/install-stack/docker/
 5.  **Run the development server:**
     ```bash
     npm run dev

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AttachedFile } from '@/lib/types';
-import { FaFilePdf, FaImage, FaTimes } from 'react-icons/fa';
+import { FaFilePdf, FaFileAudio, FaFile, FaTimes, } from 'react-icons/fa';
 
 interface Props {
   attachedFile: AttachedFile | null;
@@ -32,6 +32,7 @@ const FilePreview: React.FC<Props> = ({ attachedFile, onRemove }) => {
   const { file } = attachedFile;
   const isImage = file.type.startsWith('image/');
   const isPdf = file.type === 'application/pdf';
+  const isAudio = file.type.startsWith('audio/');
 
   return (
     <div className="mt-2 p-2 border border-gray-300 rounded-md bg-gray-50 flex items-center justify-between text-sm">
@@ -40,8 +41,10 @@ const FilePreview: React.FC<Props> = ({ attachedFile, onRemove }) => {
           <img src={previewUrl} alt="Preview" className="w-10 h-10 object-cover rounded" />
         ) : isPdf ? (
           <FaFilePdf className="w-6 h-6 text-red-500 flex-shrink-0" />
+        ) : isAudio ? (
+          <FaFileAudio className="w-6 h-6 text-red-500 flex-shrink-0" />
         ) : (
-          <FaImage className="w-6 h-6 text-gray-500 flex-shrink-0" /> // Generic file icon or specific ones
+          <FaFile className="w-6 h-6 text-red-500 flex-shrink-0" />
         )}
         <span className="text-gray-500 line-clamp-1" title={file.name}>
           {file.name}
