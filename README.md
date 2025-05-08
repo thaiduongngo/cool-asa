@@ -1,36 +1,147 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ASA AI Chatbot
+A feature-rich chatbot application, similar to Google's Gemini, built with Next.js (App Router), TypeScript, and Tailwind CSS. It interacts with the Google Gemini API for multimodal chat capabilities, including text and file (image/PDF) inputs, and features real-time response streaming. Chat history is persisted using Redis.
+
+## Features
+
+*   **New Chat:** Start fresh conversations.
+*   **Real-time Chat Response Streaming:** Messages from the AI model appear token by token.
+*   **Multimodal Input:**
+    *   Attach image files (JPEG, PNG, WEBP, GIF) to prompts.
+    *   Attach PDF files to prompts.
+    *   Uses Google's Gemini model.
+*   **Markdown Rendering:** Chat messages support Markdown formatting for rich text display.
+*   **Recent Prompts:**
+    *   Displays the top 5 most recent unique prompts.
+    *   Option to delete individual recent prompts.
+    *   Stored in `localStorage`.
+*   **Chat History:**
+    *   Displays the top 5 most recent chat sessions.
+    *   Option to load and continue a previous chat session.
+    *   Option to delete individual chat sessions.
+    *   Persisted using **Redis**.
+*   **Responsive Design:** Adapts to various screen sizes (mobile, tablet, desktop).
+*   **Manual Streaming Implementation:** Chat streaming is handled manually without relying on helper packages like Vercel's `ai`.
+*   **Styled with Tailwind CSS:** Modern and appealing user interface.
+*   **Src Directory Structure:** Follows modern Next.js project organization.
+
+## Tech Stack
+
+*   **Frontend:**
+    *   Next.js 14 (App Router)
+    *   React 18
+    *   TypeScript
+    *   Tailwind CSS (with `@tailwindcss/typography` for Markdown styling)
+*   **Backend (Next.js API Routes):**
+    *   Node.js runtime for Redis interaction
+    *   Edge runtime for Gemini API streaming
+*   **AI Model:**
+    *   Google Gemini models via `@google/generative-ai` SDK
+*   **Database/Persistence:**
+    *   **Redis** (for chat history) via `ioredis`
+    *   `localStorage` (for recent prompts)
+*   **Utilities:**
+    *   `react-icons` for UI icons
+    *   `uuid` for generating unique IDs
+    *   `react-markdown` and `remark-gfm` for Markdown rendering
+
+## Prerequisites
+
+*   Node.js (v18.x or later recommended)
+*   npm, yarn, or pnpm
+*   A Google API Key with the Gemini API enabled.
+*   A running Redis instance (local or cloud-based like Upstash).
 
 ## Getting Started
 
-First, run the development server:
+1.  **Clone the repository:**
+    ```bash
+    git clone git@github.com:thaiduongngo/cool-asa.git
+    cd cool-asa
+    ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    yarn install
+    # or
+    pnpm install
+    ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3.  **Set up Environment Variables:**
+    Create a `.env.local` file in the root of your project and add the following environment variables:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+    ```.env.local
+    # Your Google API Key for Gemini
+    GOOGLE_API_KEY=YOUR-GOOGLE-API-KEY
+    # Your Gemini mode name
+    MODEL_NAME=YOUR-MODEL-NAME
+    # Your Redis connection URL
+    # Example for local Redis:
+    REDIS_URL="redis://localhost:6379"
+    # Example for Upstash (replace with your actual credentials):
+    # REDIS_URL="redis://:your_password@your_upstash_endpoint:your_port"
+    ```
+    **Important:** Add `.env.local` to your `.gitignore` file to prevent committing sensitive keys.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4.  **Ensure Redis is running:**
+    If you're using a local Redis instance, make sure it's started. For example, with Docker:
+    ```bash
+    docker run -d -p 6379:6379 --name my-redis redis
+    ```
 
-## Learn More
+5.  **Run the development server:**
+    ```bash
+    npm run dev
+    # or
+    yarn dev
+    # or
+    pnpm dev
+    ```
+    The application will be available at `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Key Implementation Details
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+*   **Chat Streaming:** Implemented manually using `ReadableStream` on the backend and `fetch` with `TextDecoder` on the frontend for real-time updates.
+*   **Multimodal Input:** Files are converted to Base64 and sent as `inlineData` parts to the Gemini API.
+*   **Redis for Chat History:**
+    *   Chat sessions are stored as JSON strings in Redis.
+    *   A sorted set (`CHAT_INDEX_KEY`) is used to maintain the order and recency of chats, scored by `lastUpdated` timestamp.
+    *   API routes handle CRUD operations for chat history, ensuring persistence beyond browser sessions.
+*   **Markdown Rendering:** `react-markdown` with `remark-gfm` processes model responses, and `@tailwindcss/typography` provides default styling.
 
-## Deploy on Vercel
+## API Endpoints
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+*   `POST /api/chat`: Handles chat requests, streams responses from Gemini.
+*   `GET /api/chat/history`: Retrieves the list of recent chat sessions from Redis.
+*   `POST /api/chat/history`: Saves or updates a chat session in Redis.
+*   `GET /api/chat/history/[chatId]`: Retrieves a specific chat session by ID from Redis.
+*   `DELETE /api/chat/history/[chatId]`: Deletes a specific chat session by ID from Redis.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## To-Do / Future Enhancements
+
+*   [ ] User authentication to scope chat history per user.
+*   [ ] More robust error handling and user feedback.
+*   [ ] Support for more file types.
+*   [ ] Option to edit user messages.
+*   [ ] Code syntax highlighting for Markdown code blocks.
+*   [ ] UI/UX improvements (e.g., theming, animations).
+*   [ ] Unit and integration tests.
+*   [ ] Pagination for chat history if it grows very large.
+*   [ ] Implement a "Copy to Clipboard" button for code blocks.
+
+## Contributing
+
+Contributions are welcome! If you have suggestions or want to improve the app, feel free to:
+1.  Fork the repository.
+2.  Create a new branch (`git checkout -b feature/your-feature-name`).
+3.  Make your changes.
+4.  Commit your changes (`git commit -m 'Add some feature'`).
+5.  Push to the branch (`git push origin feature/your-feature-name`).
+6.  Open a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details (if you create one).
+*(If no LICENSE.md, you can state: This project is open source and available under the MIT License.)*

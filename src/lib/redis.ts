@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 
 const DEFAULT_REDIS_URL = "redis://localhost:6379";
-const redisUrl = process.env.REDIS_URL ?? DEFAULT_REDIS_URL;
+const redisUrl = process.env.REDIS_URL || DEFAULT_REDIS_URL;
 
 if (!redisUrl) {
   console.warn("REDIS_URL is not defined. Chat history persistence will be disabled or fail.");
@@ -16,7 +16,7 @@ const redis = new Redis(redisUrl || '', {
   // Optional: Add more ioredis options here if needed
   // For example, for Upstash or other cloud providers, you might need:
   // tls: {}, // if rediss:// is used, this might be automatically handled
-  // connectTimeout: 10000,
+  connectTimeout: 10000,
   maxRetriesPerRequest: 3, // Retry commands on transient errors
   lazyConnect: true, // Connect on first command, not on instantiation
 });

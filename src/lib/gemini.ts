@@ -6,7 +6,7 @@ import {
   from "@google/generative-ai";
 
 const DEFAULT_MODEL = "gemini-2.0-flash";
-const MODEL_NAME = process.env.MODEL_NAME ?? DEFAULT_MODEL;
+const MODEL_NAME = process.env.MODEL_NAME || DEFAULT_MODEL;
 const API_KEY = process.env.GOOGLE_API_KEY;
 const SYSTEM_INSTRUCTION = `Trả lời chi tiết bằng tiếng Việt. Responses are rendered in markdown with clear indents and highlights.`;
 

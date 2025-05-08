@@ -1,10 +1,8 @@
-// src/app/page.tsx
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Part } from "@/lib/types";
-
+import { Part } from '@/lib/types';
 import Sidebar from '@/components/Sidebar';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
@@ -21,11 +19,9 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
-
   const [recentPrompts, setRecentPrompts] = useLocalStorage<RecentPrompt[]>('recentPrompts', []);
-  const [chatHistory, setChatHistory] = useState<ChatSession[]>([]); // No longer useLocalStorage
+  const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true); // For loading initial history
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -185,7 +181,7 @@ export default function ChatPage() {
       setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [input, messages, attachedFile, currentChatId, /* Removed chatHistory and setChatHistory */ addRecentPrompt /* Added addRecentPrompt */]);
+  }, [input, messages, attachedFile, currentChatId, addRecentPrompt]);
 
   const handleDeletePrompt = (promptId: string) => {
     setRecentPrompts(prev => prev.filter(p => p.id !== promptId));
@@ -199,7 +195,7 @@ export default function ChatPage() {
     if (finalMessages.length === 0) return;
 
     const chatTitle = typeof finalMessages[0].content === 'string'
-      ? finalMessages[0].content.substring(0, 50)
+      ? finalMessages[0].content.substring(0, 255)
       : finalMessages[0].fileInfo?.name
       || "Untitled Chat";
 
