@@ -17,7 +17,10 @@ const RecentPrompts: React.FC<Props> = ({ prompts, onSelectPrompt, onDeletePromp
         (
           <ul className="space-y-1">
             {prompts.map((prompt) => (
-              <li key={prompt.id} className="group flex items-center justify-between p-2 rounded-md hover:bg-red-100 hover:font-medium cursor-pointer text-sm text-gray-700">
+              <li key={prompt.id}
+                className="group flex items-center justify-between p-2 rounded-md 
+                hover:bg-red-100 hover:font-medium hover:text-red-800
+                cursor-pointer text-sm text-gray-700">
                 <span
                   onClick={() => onSelectPrompt(prompt.text)}
                   className="line-clamp-1 flex-grow mr-2"

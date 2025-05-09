@@ -2,9 +2,10 @@ import { ApiFileData } from '@/lib/types';
 
 export const MAX_FILE_SIZE_MB = 15;
 export const ALLOWED_FILE_TYPES = [
-  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/tiff',
-  'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/aac',
-  'audio/mp4', 'application/pdf',
+  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/tiff', 'image/bmp', 'image/apng', 'image/svg+xml',
+  'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/aac', 'audio/mp4',
+  'text/plain', 'text/csv', 'text/html',
+  'application/pdf', 'application/epub+zip', 'application/json',
 ];
 
 export const fileToBase64 = (file: File): Promise<string> => {

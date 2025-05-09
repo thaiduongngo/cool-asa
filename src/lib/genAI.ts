@@ -1,3 +1,3 @@
-import { model } from "@/lib/gemini";
+import { generateContentStream } from "@/lib/gemini";
 
-export { model };
+export { generateContentStream };

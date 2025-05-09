@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { model } from '@/lib/genAI';
+import { generateContentStream } from '@/lib/genAI';
 import { Prompt, Part } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
@@ -37,16 +37,16 @@ export async function POST(req: NextRequest) {
     // Combine history with the new user message
     const contents = [...history, { role: 'user' as const, parts: userParts }];
 
-    const stream = await model.generateContentStream({ contents });
+    const stream = await generateContentStream(contents);
 
     // --- Create a ReadableStream to send back to the client ---
     const readableStream = new ReadableStream({
       async start(controller) {
         const encoder = new TextEncoder();
         try {
-          for await (const chunk of stream.stream) {
+          for await (const chunk of stream) {
             // Ensure chunk has text before encoding/enqueuing
-            const text = chunk.text?.(); // Use optional chaining
+            const text = chunk.text; // Use optional chaining
             if (text) {
               controller.enqueue(encoder.encode(text));
             } else {
