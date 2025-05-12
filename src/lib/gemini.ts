@@ -2,8 +2,8 @@ import {
   GoogleGenAI,
   HarmCategory,
   HarmBlockThreshold,
-  ContentListUnion
 } from '@google/genai';
+import { Content } from '@/lib/types';
 
 const DEFAULT_MODEL = "gemini-2.0-flash";
 const MODEL_NAME = process.env.MODEL_NAME || DEFAULT_MODEL;
@@ -45,7 +45,7 @@ const config = {
   ],
 };
 
-const generateContentStream = async (contents: ContentListUnion) => {
+const generateContentStream = async (contents: Content[]) => {
   return await ai.models.generateContentStream({
     model: MODEL_NAME,
     config: config,

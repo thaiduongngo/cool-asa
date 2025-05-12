@@ -84,3 +84,13 @@ export interface Prompt {
   }[],
   fileData?: ApiFileData
 }
+
+export declare interface Content {
+  /** List of parts that constitute a single message. Each part may have
+   a different IANA MIME type. */
+  parts?: Part[];
+  /** Optional. The producer of the content. Must be either 'user' or
+   'model'. Useful to set for multi-turn conversations, otherwise can be
+   empty. If role is not specified, SDK will determine the role. */
+  role?: string;
+}
