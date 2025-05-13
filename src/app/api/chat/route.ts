@@ -45,8 +45,23 @@ export async function POST(req: NextRequest) {
         const encoder = new TextEncoder();
         try {
           for await (const chunk of stream) {
+            const jsChunk = JSON.parse(JSON.stringify(chunk));
+            let text: string | undefined;
+            if (
+              Array.isArray(jsChunk.candidates) &&
+              jsChunk.candidates.length > 0 &&
+              jsChunk.candidates[0]?.content?.parts &&
+              Array.isArray(jsChunk.candidates[0].content.parts) &&
+              jsChunk.candidates[0].content.parts.length > 0 &&
+              typeof jsChunk.candidates[0].content.parts[0]?.text === 'string'
+            ) {
+              text = jsChunk.candidates[0].content.parts[0].text;
+            } else if (jsChunk?.message?.content) {
+              text = jsChunk.message.content;
+            } else {
+              text = undefined;
+            }
             // Ensure chunk has text before encoding/enqueuing
-            const text = chunk.text; // Use optional chaining
             if (text) {
               controller.enqueue(encoder.encode(text));
             } else {
