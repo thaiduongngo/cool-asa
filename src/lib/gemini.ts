@@ -6,7 +6,7 @@ import {
 import { Content } from '@/lib/types';
 
 const DEFAULT_MODEL = "gemini-2.0-flash";
-const MODEL_NAME = process.env.MODEL_NAME || DEFAULT_MODEL;
+const MODEL_NAME = process.env.GEMINI_MODEL || DEFAULT_MODEL;
 const API_KEY = process.env.GOOGLE_API_KEY;
 const SYSTEM_INSTRUCTION = `Trả lời chi tiết bằng tiếng Việt. Responses are rendered in markdown with clear indents and highlights.`;
 
@@ -22,19 +22,19 @@ const config = {
   safetySettings: [
     {
       category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-      threshold: HarmBlockThreshold.BLOCK_NONE,  // Block none
+      threshold: HarmBlockThreshold.BLOCK_NONE,
     },
     {
       category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-      threshold: HarmBlockThreshold.BLOCK_NONE,  // Block none
+      threshold: HarmBlockThreshold.BLOCK_NONE,
     },
     {
       category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-      threshold: HarmBlockThreshold.BLOCK_NONE,  // Block none
+      threshold: HarmBlockThreshold.BLOCK_NONE,
     },
     {
       category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-      threshold: HarmBlockThreshold.BLOCK_NONE,  // Block none
+      threshold: HarmBlockThreshold.BLOCK_NONE,
     },
   ],
   responseMimeType: 'text/plain',

@@ -1,9 +1,9 @@
 import ollama from 'ollama';
 import { Message } from 'ollama';
-import { Content, Part } from '@/lib/types';
+import { Content, Part, SYSTEM, ASSISTANT, MODEL } from '@/lib/types';
 
 const DEFAULT_MODEL = "qwen3:8b";
-const MODEL_NAME = DEFAULT_MODEL;
+const MODEL_NAME = process.env.OLLAMA_MODEL || DEFAULT_MODEL;
 const SYSTEM_INSTRUCTION = `Trả lời chi tiết bằng tiếng Việt. Responses are rendered in markdown with clear indents and highlights.`;
 const OPTIONS = {
   num_ctx: 8192,
@@ -15,7 +15,7 @@ const OPTIONS = {
 const generateContentStream = async (contents: Content[]) => {
   let messages: Message[] = [
     {
-      role: 'system',
+      role: SYSTEM,
       content: SYSTEM_INSTRUCTION
     }
   ];
@@ -23,8 +23,8 @@ const generateContentStream = async (contents: Content[]) => {
   contents.forEach((content: Content) => {
     const mes = content.parts.map((part: Part) => {
       return {
-        role: content.role,
-        content: part.text || "Attached file.",
+        role: content.role === MODEL ? ASSISTANT : content.role,
+        content: part.text || "User's attached file.",
         images: part.inlineData?.data ? [part.inlineData.data] : undefined
       };
     });

@@ -1,4 +1,9 @@
-export declare type Role = "user" | "model" | "system";
+export const USER = 'user';
+export const MODEL = 'model';
+export const ASSISTANT = 'assistant';
+export const SYSTEM = 'system';
+
+export declare type Role = 'user' | 'model' | 'system' | 'assistant';
 
 export declare interface FileData {
   mimeType: string;
@@ -62,20 +67,17 @@ export interface RecentPrompt {
   text: string;
 }
 
-// Type for file data sent to the API
 export interface ApiFileData {
   mimeType: string;
   base64Data: string;
-  name: string; // Keep name for display/context
+  name: string;
 }
 
-// Type for file state before sending
 export interface AttachedFile {
   file: File;
-  previewUrl?: string; // For images
+  previewUrl?: string;
 }
 
-// Type for prompt
 export interface Prompt {
   prompt: string;
   history: {

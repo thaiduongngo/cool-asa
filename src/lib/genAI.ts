@@ -1,3 +1,3 @@
-import { generateContentStream } from "@/lib/ollama";
+import { generateContentStream } from "@/lib/gemini";
 
 export { generateContentStream };
