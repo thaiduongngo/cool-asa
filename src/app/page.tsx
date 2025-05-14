@@ -240,10 +240,10 @@ export default function ChatPage() {
     }
   };
 
-  const startNewChat = (clearCurrentId = true) => { // Added param to control clearing ID
+  const startNewChat = (clearCurrentId: boolean = true) => {
     setMessages([]);
     setInput('');
-    if (clearCurrentId) setCurrentChatId(null);
+    if (clearCurrentId) setCurrentChatId(uuidv4());
     setError(null);
     setIsLoading(false);
     setAttachedFile(null);
@@ -284,7 +284,7 @@ export default function ChatPage() {
       }
       setChatHistory(prev => prev.filter(c => c.id !== chatId));
       if (currentChatId === chatId) {
-        startNewChat();
+        startNewChat(true);
       }
     } catch (err: any) {
       console.error('Error deleting chat session:', err);

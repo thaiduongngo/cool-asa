@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { redis, CHAT_HISTORY_PREFIX, CHAT_INDEX_KEY, MAX_CHAT_HISTORY } from '@/lib/redis';
 import { ChatSession } from '@/lib/types';
-import { v4 as uuidv4 } from 'uuid';
-
-export const runtime = 'nodejs'; // Redis client typically needs Node.js runtime
 
 // GET /api/chat/history - Fetches top N recent chat sessions
 export async function GET(req: NextRequest) {
