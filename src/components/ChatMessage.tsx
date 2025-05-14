@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { Message, Part } from '@/lib/types';
 import { FaUser, FaRobot } from 'react-icons/fa';
 
@@ -50,20 +52,22 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
             `}
         >
           <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeKatex]}
             // Customize rendering of specific elements if needed
             components={{
               // Example: Style links
               a: ({ node, ...props }) => <a className="text-red-400 hover:underline" {...props} />,
               // Example: Style code blocks (Tailwind prose should handle this well by default)
               pre: ({ node, ...props }) => <pre className="text-red-800 bg-red-200 text-wrap p-2 rounded" {...props} />,
-              // code: ({node, inline, ...props}) => {
-              //   return inline ? (
-              //     <code className="bg-gray-200 text-red-500 px-1 rounded" {...props} />
-              //   ) : (
-              //     <code className="block whitespace-pre-wrap" {...props} />
-              //   );
-              // }
+              /*
+              code: ({ node, ...props }) => {
+                return node ? (
+                  <code className="bg-gray-200 text-red-500 px-1 rounded" {...props} />
+                ) : (
+                  <code className="block whitespace-pre-wrap" {...props} />
+                );
+              }*/
             }}
           >
             {markdownText}

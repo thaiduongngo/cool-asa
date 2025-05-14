@@ -87,6 +87,7 @@ export default function ChatPage() {
     setIsLoading(true);
     setError(null);
 
+    const chatId = currentChatId ?? uuidv4();
     const userMessageId = uuidv4();
     let fileDataForApi: ApiFileData | null = null;
     let userMessageContent: string | Part[] = trimmedInput;
@@ -163,10 +164,10 @@ export default function ChatPage() {
         const finalModelMessage: Message = { id: modelMessageId, role: 'model', content: modelResponse, timestamp: Date.now() };
         setMessages(prev => {
           const finalMessages = prev.map(msg => msg.id === modelMessageId ? finalModelMessage : msg);
-          // IMPORTANT: Pass the final messages to saveChatSession
-          saveChatSession(finalMessages);
+          saveChatSession(chatId, finalMessages);
           return finalMessages;
         });
+
       } else if (!streamEnded) {
         setError("The response stream ended unexpectedly.");
         setMessages(prev => prev.filter(msg => msg.id !== modelMessageId));
@@ -191,7 +192,7 @@ export default function ChatPage() {
     setInput(promptText);
   };
 
-  const saveChatSession = async (finalMessages: Message[]) => {
+  const saveChatSession = async (chatId: string, finalMessages: Message[]) => {
     if (finalMessages.length === 0) return;
 
     const chatTitle = typeof finalMessages[0].content === 'string'
@@ -199,11 +200,11 @@ export default function ChatPage() {
       : finalMessages[0].fileInfo?.name
       || "Untitled Chat";
 
-    const sessionToSave: Partial<ChatSession> = { // id might be undefined for new chat
-      id: currentChatId || chatTitle, // Send undefined if new, API will generate ID
+    const sessionToSave: ChatSession = {
+      id: chatId,
       title: chatTitle,
       messages: finalMessages,
-      lastUpdated: Date.now(), // API will also set this, but good to have client-side too
+      lastUpdated: Date.now(),
     };
 
     try {
@@ -217,7 +218,6 @@ export default function ChatPage() {
         throw new Error(errorData.error || 'Failed to save chat session');
       }
       const savedSession: ChatSession = await response.json();
-
       // Update client-side chat history
       setChatHistory(prev => {
         const existingIndex = prev.findIndex(c => c.id === savedSession.id);
@@ -232,9 +232,8 @@ export default function ChatPage() {
           .slice(0, 50); // Keep a larger buffer client-side, server enforces strict MAX_CHAT_HISTORY
       });
 
-      if (!currentChatId) { // If it was a new chat, set its ID now
-        setCurrentChatId(savedSession.id);
-      }
+      if (!currentChatId) setCurrentChatId(savedSession.id);
+
     } catch (err: any) {
       console.error('Error saving chat session:', err);
       setError(`Failed to save chat: ${err.message}`);

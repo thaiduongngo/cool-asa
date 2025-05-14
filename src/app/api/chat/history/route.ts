@@ -40,14 +40,15 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     await redis.connect().catch(() => { /* ignore connection errors if already connected */ });
-    const sessionData = (await req.json()) as Omit<ChatSession, 'id'> & { id?: string };
+    const sessionData = await req.json();
 
-    const sessionId = sessionData.id || uuidv4();
+    const sessionId = sessionData.id; // Now required session.id passed from client
+    if (!sessionId) throw new Error(`Chat session ID is undefined.`);
     const sessionKey = `${CHAT_HISTORY_PREFIX}${sessionId}`;
     const sessionToSave: ChatSession = {
       ...sessionData,
       id: sessionId,
-      lastUpdated: Date.now(), // Ensure lastUpdated is fresh
+      lastUpdated: Date.now(),
     };
 
     const pipeline = redis.pipeline();
