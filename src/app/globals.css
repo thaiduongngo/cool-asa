@@ -93,3 +93,8 @@ body,
 .prose-invert a {
   @apply text-blue-400 hover:text-blue-300 underline;
 }
+
+.prose .katex {
+  color: inherit;
+  font-size: larger;
+}

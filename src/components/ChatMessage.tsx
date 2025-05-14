@@ -53,10 +53,8 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
         >
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-            // Customize rendering of specific elements if needed
+            rehypePlugins={[[rehypeKatex, { strict: false }]]}
             components={{
-              // Example: Style links
               a: ({ node, ...props }) => <a className="text-red-400 hover:underline" {...props} />,
               // Example: Style code blocks (Tailwind prose should handle this well by default)
               pre: ({ node, ...props }) => <pre className="text-red-800 bg-red-200 text-wrap p-2 rounded" {...props} />,
@@ -67,7 +65,8 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
                 ) : (
                   <code className="block whitespace-pre-wrap" {...props} />
                 );
-              }*/
+              }
+              */
             }}
           >
             {markdownText}
