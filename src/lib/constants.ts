@@ -6,3 +6,5 @@ const METADATA = {
 };
 
 export { METADATA }
+
+export const SYSTEM_INSTRUCTION = `Trả lời chi tiết bằng tiếng Việt. Responses are rendered in markdown with clear indents and highlights.`;

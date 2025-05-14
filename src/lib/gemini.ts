@@ -4,11 +4,11 @@ import {
   HarmBlockThreshold,
 } from '@google/genai';
 import { Content } from '@/lib/types';
+import { SYSTEM_INSTRUCTION } from '@/lib/constants'
 
 const DEFAULT_MODEL = "gemini-2.0-flash";
 const MODEL_NAME = process.env.GEMINI_MODEL || DEFAULT_MODEL;
 const API_KEY = process.env.GOOGLE_API_KEY;
-const SYSTEM_INSTRUCTION = `Trả lời chi tiết bằng tiếng Việt. Responses are rendered in markdown with clear indents and highlights.`;
 
 if (!API_KEY) {
   throw new Error("GOOGLE_API_KEY is not defined in environment variables");

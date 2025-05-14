@@ -55,24 +55,21 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[[rehypeKatex, { strict: false }]]}
             components={{
-              a: ({ node, ...props }) => <a className="text-red-400 hover:underline" {...props} />,
-              // Example: Style code blocks (Tailwind prose should handle this well by default)
-              pre: ({ node, ...props }) => <pre className="text-red-800 bg-red-200 text-wrap p-2 rounded" {...props} />,
-              /*
+              a: ({ node, ...props }) => <a className="text-blue-400 hover:underline" {...props} />,
+              pre: ({ node, ...props }) => <pre className="text-red-700 bg-red-200 text-wrap p-2 rounded" {...props} />,
               code: ({ node, ...props }) => {
-                return node ? (
-                  <code className="bg-gray-200 text-red-500 px-1 rounded" {...props} />
+                const { inline, ...rest } = props as any;
+                return inline ? (
+                  <code className="bg-red-100 text-red-700 px-1 rounded" {...rest} />
                 ) : (
-                  <code className="block whitespace-pre-wrap" {...props} />
+                  <code className="block text-red-700 whitespace-pre-wrap" {...rest} />
                 );
               }
-              */
             }}
           >
             {markdownText}
           </ReactMarkdown>
         </div>
-        {/* Timestamp */}
         <div className={`text-xs opacity-60 mt-1 text-right ${isUser ? 'text-red-200' : 'text-gray-500'}`}>
           {new Date(message.timestamp).toLocaleTimeString()}
         </div>
