@@ -65,18 +65,20 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     npm install
     # or
     yarn install
-    # or
-    pnpm install
     ```
 
-3.  **Set up Environment Variables:**
+3.  **Install Ollama Server**
+    https://github.com/ollama/ollama
+
+4.  **Set up Environment Variables:**
     Create a `.env.local` file in the root of your project and add the following environment variables:
 
     ```.env.local
-    # Your Google API Key for Gemini
-    GOOGLE_API_KEY=YOUR-GOOGLE-API-KEY
-    # Your Gemini mode name
-    MODEL_NAME=YOUR-MODEL-NAME
+    # Your Google API Key for Gemini, you can obtain the key at https://aistudio.google.com/
+    GOOGLE_API_KEY="YOUR-GOOGLE-API-KEY"
+    # Your model settings
+    GEMINI_MODEL="YOUR-GEMINI-MODEL-NAME"
+    OLLAMA_MODEL="YOUR-OLLAMA-MODEL-NAME"
     # Your Redis connection URL
     # Example for local Redis:
     REDIS_URL="redis://localhost:6379"
@@ -85,7 +87,7 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     ```
     **Important:** Add `.env.local` to your `.gitignore` file to prevent committing sensitive keys.
 
-4.  **Ensure Redis is running:**
+5.  **Ensure Redis is running:**
     If you're using a local Redis instance, make sure it's started. For example, with Docker:
     ```bash
     docker run -d --name redis -p 6379:6379 redis:<version>
@@ -95,13 +97,11 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     docker exec -it redis redis-cli
     ```
     https://redis.io/docs/latest/operate/oss_and_stack/install/install-stack/docker/
-5.  **Run the development server:**
+6.  **Run the development server:**
     ```bash
     npm run dev
     # or
     yarn dev
-    # or
-    pnpm dev
     ```
     The application will be available at `http://localhost:3000`.
 
