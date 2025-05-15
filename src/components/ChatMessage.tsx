@@ -35,14 +35,14 @@ const ChatMessage: React.FC<Props> = ({ message, onDeleteMessage }) => {
   };
 
   return (
-    <div className={`group flex gap-3 my-4 ${isUser ? 'justify-end' : 'justify-start'} relative`}>
+    <div className={`flex gap-3 my-4 ${isUser ? 'justify-end' : 'justify-start'} relative`}>
       {!isUser && (
         <div className="flex-shrink-0 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white">
           <FaRobot size={18} />
         </div>
       )}
       <div
-        className={`max-w-[85%] md:max-w-[75%] p-3 rounded-lg shadow ${isUser ?
+        className={`group max-w-[85%] md:max-w-[75%] p-3 rounded-lg shadow ${isUser ?
           'bg-red-600 text-white' :
           'bg-gray-100 text-gray-800'
           } relative`}

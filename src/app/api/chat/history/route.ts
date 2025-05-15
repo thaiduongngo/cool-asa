@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
           removalPipeline.zrem(CHAT_INDEX_KEY, id);       // Remove from sorted set
         });
         await removalPipeline.exec();
-        console.log(`Trimmed ${idsToRemove.length} old chat sessions.`);
+        // console.log(`Trimmed ${idsToRemove.length} old chat sessions.`);
       }
     }
 
