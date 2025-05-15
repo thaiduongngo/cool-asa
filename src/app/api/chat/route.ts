@@ -44,6 +44,8 @@ export async function POST(req: NextRequest) {
       async start(controller) {
         const encoder = new TextEncoder();
         try {
+          if (!stream) throw new Error(`No proper definition of AI Provider.`);
+
           for await (const chunk of stream) {
             const jsChunk = JSON.parse(JSON.stringify(chunk));
             let text: string | undefined;

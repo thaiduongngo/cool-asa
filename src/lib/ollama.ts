@@ -22,10 +22,13 @@ const generateContentStream = async (contents: Content[]) => {
 
   contents.forEach((content: Content) => {
     const mes = content.parts.map((part: Part) => {
-      return {
+      return part.inlineData?.data ? {
         role: content.role === MODEL ? ASSISTANT : content.role,
-        content: part.text || "User's attached file.",
-        images: part.inlineData?.data ? [part.inlineData.data] : undefined
+        content: "User's attached file.",
+        images: [part.inlineData.data]
+      } : {
+        role: content.role === MODEL ? ASSISTANT : content.role,
+        content: part.text ?? "",
       };
     });
     messages.push(...mes);
