@@ -4,10 +4,11 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { Message, Part } from '@/lib/types';
-import { FaUser, FaRobot } from 'react-icons/fa';
+import { FaUser, FaRobot, FaTrash } from 'react-icons/fa';
 
 interface Props {
   message: Message;
+  onDeleteMessage: (messageId: string) => void;
 }
 
 // Helper to extract text content from string or Part[] for Markdown rendering
@@ -22,12 +23,19 @@ const getTextForMarkdown = (content: string | Part[]): string => {
     .join(''); // Join text parts, model might send multiple text parts
 };
 
-const ChatMessage: React.FC<Props> = ({ message }) => {
+const ChatMessage: React.FC<Props> = ({ message, onDeleteMessage }) => {
   const isUser = message.role === 'user';
   const markdownText = getTextForMarkdown(message.content);
 
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering other click events on the message
+    if (window.confirm('Are you sure you want to delete this message?')) {
+      onDeleteMessage(message.id);
+    }
+  };
+
   return (
-    <div className={`flex gap-3 my-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div className={`group flex gap-3 my-4 ${isUser ? 'justify-end' : 'justify-start'} relative`}>
       {!isUser && (
         <div className="flex-shrink-0 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white">
           <FaRobot size={18} />
@@ -37,7 +45,7 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
         className={`max-w-[85%] md:max-w-[75%] p-3 rounded-lg shadow ${isUser ?
           'bg-red-600 text-white' :
           'bg-gray-100 text-gray-800'
-          }`}
+          } relative`}
       >
         {message.fileInfo && (
           <div className={`mb-2 text-xs italic opacity-80 border-b pb-1 ${isUser ? 'border-red-300' : 'border-gray-300'}`}>
@@ -73,6 +81,18 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
         <div className={`text-xs opacity-60 mt-1 text-right ${isUser ? 'text-red-200' : 'text-gray-500'}`}>
           {new Date(message.timestamp).toLocaleTimeString()}
         </div>
+        <button
+          onClick={handleDeleteClick}
+          className={`
+            absolute p-1.5 rounded-full opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-150
+            ${isUser ?
+              'right-13 -translate-x-full bottom-2 text-gray-100 hover:text-red-600 hover:bg-gray-100' :
+              'right-13 -translate-x-full bottom-2 text-gray-400 hover:text-gray-200 hover:bg-gray-700'}`}
+          aria-label="Delete message"
+          title="Delete message"
+        >
+          <FaTrash size={15} />
+        </button>
       </div>
       {isUser && (
         <div className="flex-shrink-0 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white">

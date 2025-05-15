@@ -292,6 +292,24 @@ export default function ChatPage() {
     }
   };
 
+  const handleDeleteMessage = (messageIdToDelete: string) => {
+    const updatedMessages = messages.filter(msg => msg.id !== messageIdToDelete);
+    setMessages(updatedMessages);
+
+    // If this is part of a saved chat (currentChatId exists),
+    // or if it's a new chat that now becomes empty and we don't want to save it,
+    // we need to update the persisted state.
+    if (currentChatId || updatedMessages.length > 0) {
+      // If currentChatId exists, or if it's a new chat but still has messages, save it.
+      // If it's a new chat and becomes empty, saveChatSession will handle not saving it.
+      if (currentChatId) saveChatSession(currentChatId, updatedMessages);
+    } else if (!currentChatId && updatedMessages.length === 0) {
+      // This was a new chat, and deleting the message made it empty.
+      // No need to call saveChatSession as it would be skipped anyway.
+      console.log("New chat became empty after message deletion. Not saving.");
+    }
+  };
+
   const handleAttachFile = (file: File) => {
     setAttachedFile({ file });
   };
@@ -327,7 +345,10 @@ export default function ChatPage() {
           )}
 
           {messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
+            <ChatMessage
+              key={message.id}
+              message={message}
+              onDeleteMessage={handleDeleteMessage} />
           ))}
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
             <div className="flex justify-start">
