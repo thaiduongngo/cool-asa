@@ -21,7 +21,6 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     *   Option to delete individual chat sessions.
     *   Persisted using **Redis**.
 *   **Responsive Design:** Adapts to various screen sizes (mobile, tablet, desktop).
-*   **Manual Streaming Implementation:** Chat streaming is handled manually without relying on helper packages like Vercel's `ai`.
 *   **Styled with Tailwind CSS:** Modern and appealing user interface.
 *   **Src Directory Structure:** Follows modern Next.js project organization.
 
@@ -36,14 +35,14 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     *   Node.js runtime for Redis interaction
     *   Edge runtime for Gemini API streaming
 *   **AI Model:**
-    *   Google Gemini models via `@google/generative-ai` SDK
+    *   Google Gemini models via `@google/genai` SDK
 *   **Database/Persistence:**
     *   **Redis** (for chat history) via `ioredis`
     *   `localStorage` (for recent prompts)
 *   **Utilities:**
     *   `react-icons` for UI icons
     *   `uuid` for generating unique IDs
-    *   `react-markdown` and `remark-gfm` for Markdown rendering
+    *   `react-markdown`, `remark-gfm`, `remarkMath`, and `rehypeKatex` for Markdown rendering
 
 ## Prerequisites
 
@@ -128,8 +127,6 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
 
 *   [ ] User authentication to scope chat history per user.
 *   [ ] More robust error handling and user feedback.
-*   [ ] Support for more file types.
-*   [ ] Option to edit user messages.
 *   [ ] Code syntax highlighting for Markdown code blocks.
 *   [ ] UI/UX improvements (e.g., theming, animations).
 *   [ ] Unit and integration tests.
