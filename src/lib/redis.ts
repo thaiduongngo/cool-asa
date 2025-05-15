@@ -33,6 +33,6 @@ redis.on('connect', () => {
 // Key prefix for all chat history data to avoid collisions if Redis is shared
 const CHAT_HISTORY_PREFIX = "chat_history:";
 const CHAT_INDEX_KEY = `${CHAT_HISTORY_PREFIX}index`; // Sorted set for chat IDs by lastUpdated
-const MAX_CHAT_HISTORY = 5; // Same as client-side, but now enforced on server
+const MAX_CHAT_HISTORY = 10; // Same as client-side, but now enforced on server
 
 export { redis, CHAT_HISTORY_PREFIX, CHAT_INDEX_KEY, MAX_CHAT_HISTORY };
