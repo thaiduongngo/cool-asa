@@ -10,7 +10,7 @@ import useLocalStorage from '@/hooks/useLocalStorage';
 import { Message, ChatSession, RecentPrompt, ApiFileData, AttachedFile } from '@/lib/types';
 import { prepareFileDataForApi } from '@/utils/fileHelper';
 
-const MAX_RECENT_PROMPTS = 10;
+const MAX_RECENT_PROMPTS = 6;
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);

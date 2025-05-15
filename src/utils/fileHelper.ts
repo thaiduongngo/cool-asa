@@ -1,6 +1,6 @@
 import { ApiFileData } from '@/lib/types';
 
-export const MAX_FILE_SIZE_MB = 20;
+export const MAX_FILE_SIZE_MB = 50;
 export const ALLOWED_FILE_TYPES = [
   'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/tiff', 'image/bmp', 'image/apng', 'image/svg+xml',
   'audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/aac',
