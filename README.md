@@ -83,6 +83,7 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     REDIS_URL="redis://localhost:6379"
     # Example for Upstash (replace with your actual credentials):
     # REDIS_URL="redis://:your_password@your_upstash_endpoint:your_port"
+    AI_PROVIDER="GOOGLE" # Support either GOOGLE or OLLAMA
     ```
     **Important:** Add `.env.local` to your `.gitignore` file to prevent committing sensitive keys.
 
