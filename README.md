@@ -85,6 +85,7 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     # REDIS_URL="redis://:your_password@your_upstash_endpoint:your_port"
     AI_PROVIDER="GOOGLE" # Support either GOOGLE or OLLAMA
     MAX_CHAT_HISTORY=5 # Customize max chat history
+    MAX_RECENT_PROMPTS=5 # Customize max recent prompts
     ```
 
 5.  **Ensure Redis is running:**
