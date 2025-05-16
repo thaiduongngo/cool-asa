@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   try {
     await redis.connect().catch(() => { /* ignore connection errors if already connected */ });
     // Get the top N chat IDs from the sorted set (newest first)
-    const chatIds = await redis.zrevrange(CHAT_INDEX_KEY, 0, MAX_CHAT_HISTORY - 1);
+    const chatIds = await redis.zrevrange(CHAT_INDEX_KEY, 0, Number(MAX_CHAT_HISTORY) - 1);
 
     if (chatIds.length === 0) {
       return NextResponse.json([], { status: 200 });
@@ -69,8 +69,8 @@ export async function POST(req: NextRequest) {
 
     // Trim logic (after initial save)
     const currentSize = await redis.zcard(CHAT_INDEX_KEY);
-    if (currentSize > MAX_CHAT_HISTORY) {
-      const idsToRemove = await redis.zrange(CHAT_INDEX_KEY, 0, currentSize - MAX_CHAT_HISTORY - 1);
+    if (currentSize > Number(MAX_CHAT_HISTORY)) {
+      const idsToRemove = await redis.zrange(CHAT_INDEX_KEY, 0, currentSize - Number(MAX_CHAT_HISTORY) - 1);
       if (idsToRemove.length > 0) {
         const removalPipeline = redis.pipeline();
         idsToRemove.forEach(id => {

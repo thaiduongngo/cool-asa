@@ -6,11 +6,8 @@ import { Part } from '@/lib/types';
 import Sidebar from '@/components/Sidebar';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
-import useLocalStorage from '@/hooks/useLocalStorage';
 import { Message, ChatSession, RecentPrompt, ApiFileData, AttachedFile } from '@/lib/types';
 import { prepareFileDataForApi } from '@/utils/fileHelper';
-
-const MAX_RECENT_PROMPTS = 6;
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -19,13 +16,40 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
-  const [recentPrompts, setRecentPrompts] = useLocalStorage<RecentPrompt[]>('recentPrompts', []);
+
+  const [recentPrompts, setRecentPrompts] = useState<RecentPrompt[]>([]); // No longer useLocalStorage
+  const [isRecentPromptsLoading, setIsRecentPromptsLoading] = useState(true);
+
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
-  const [isHistoryLoading, setIsHistoryLoading] = useState(true); // For loading initial history
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // --- Fetch Initial Chat History ---
+  /**
+   * Fetch Initial Recent Prompts
+   */
+  const fetchRecentPrompts = useCallback(async () => {
+    setIsRecentPromptsLoading(true);
+    try {
+      const response = await fetch('/api/prompts');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to fetch prompts" }));
+        throw new Error(errorData.error || `Failed to fetch recent prompts: ${response.statusText}`);
+      }
+      const data: RecentPrompt[] = await response.json();
+      setRecentPrompts(data);
+    } catch (err: any) {
+      console.error('Error fetching recent prompts:', err);
+      // setError(`Could not load recent prompts: ${err.message}`); // Optional: show error
+      setRecentPrompts([]); // Default to empty on error
+    } finally {
+      setIsRecentPromptsLoading(false);
+    }
+  }, []);
+  /**
+   * Fetch Initial Chat History
+   */
   const fetchChatHistory = useCallback(async () => {
     setIsHistoryLoading(true);
     setError(null);
@@ -56,28 +80,42 @@ export default function ChatPage() {
 
   useEffect(() => {
     fetchChatHistory();
+    fetchRecentPrompts(); // Fetch recent prompts on mount
 
-    const checkScreenSize = () => {
-      setIsSidebarOpen(window.innerWidth >= 768);
-    };
+    const checkScreenSize = () => setIsSidebarOpen(window.innerWidth >= 768);
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
-  }, [fetchChatHistory]); // fetchChatHistory is memoized
+  }, [fetchChatHistory, fetchRecentPrompts]); // Add fetchRecentPrompts
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-
-  // --- Helper Functions (Modified for API calls) ---
-  const addRecentPrompt = useCallback((promptText: string) => {
-    setRecentPrompts(prev => {
-      const newPrompt: RecentPrompt = { id: uuidv4(), text: promptText };
-      const filtered = prev.filter(p => p.text !== promptText);
-      return [newPrompt, ...filtered].slice(0, MAX_RECENT_PROMPTS);
-    });
-  }, [setRecentPrompts]);
+  /**
+   * Helper Functions (Modified for API calls)
+   */
+  const addRecentPrompt = useCallback(async (promptText: string) => {
+    if (!promptText.trim()) return;
+    try {
+      const response = await fetch('/api/prompts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: promptText.trim() }),
+      });
+      if (!response.ok) {
+        // Optionally handle error, e.g., log it or show a subtle notification
+        console.error('Failed to add recent prompt:', await response.text());
+        return; // Don't proceed if adding failed
+      }
+      // const newPrompt = await response.json(); // The API returns the added prompt
+      // Optimistically update or re-fetch
+      // For simplicity, re-fetch. For better UX, optimistic update.
+      fetchRecentPrompts();
+    } catch (err) {
+      console.error('Error in addRecentPrompt:', err);
+    }
+  }, [fetchRecentPrompts]); // Depends on fetchRecentPrompts
 
   // --- Core Chat Logic (handleSendMessage) ---
   const handleSendMessage = useCallback(async () => {
@@ -111,13 +149,20 @@ export default function ChatPage() {
       role: 'user',
       content: userMessageContent,
       timestamp: Date.now(),
-      ...(attachedFile && { fileInfo: { name: attachedFile.file.name, type: attachedFile.file.type } })
+      ...(attachedFile && {
+        fileInfo: {
+          name: attachedFile.file.name, type: attachedFile.file.type
+
+        }
+      })
     };
 
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
 
-    if (trimmedInput) addRecentPrompt(trimmedInput);
+    if (trimmedInput) {
+      addRecentPrompt(trimmedInput);
+    }
     setInput('');
     setAttachedFile(null);
 
@@ -184,9 +229,23 @@ export default function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input, messages, attachedFile, currentChatId, addRecentPrompt]);
 
-  const handleDeletePrompt = (promptId: string) => {
-    setRecentPrompts(prev => prev.filter(p => p.id !== promptId));
-  };
+  const handleDeletePrompt = useCallback(async (promptIdOrText: string) => {
+    try {
+      const response = await fetch('/api/prompts/delete', {
+        method: 'POST', // Using POST for delete as we send text in body
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: promptIdOrText }),
+      });
+      if (!response.ok) {
+        console.error('Failed to delete recent prompt:', await response.text());
+        return;
+      }
+      // Re-fetch to update the list
+      fetchRecentPrompts();
+    } catch (err) {
+      console.error('Error in handleDeletePrompt:', err);
+    }
+  }, [fetchRecentPrompts]); // Depends on fetchRecentPrompts
 
   const handleSelectPrompt = (promptText: string) => {
     setInput(promptText);
@@ -321,12 +380,14 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar
-        recentPrompts={recentPrompts}
+        recentPrompts={recentPrompts} // Pass down the state
+        isRecentPromptsLoading={isRecentPromptsLoading} // Pass loading state
         chatHistory={chatHistory}
+        isChatHistoryLoading={isHistoryLoading} // Pass chat history loading state
         currentChatId={currentChatId}
         isSidebarOpen={isSidebarOpen}
-        onNewChat={startNewChat}
-        onDeletePrompt={handleDeletePrompt}
+        onNewChat={() => startNewChat(true)}
+        onDeletePrompt={handleDeletePrompt} // Pass the new handler
         onSelectPrompt={handleSelectPrompt}
         onLoadChat={handleLoadChat}
         onDeleteChat={handleDeleteChat}

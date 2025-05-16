@@ -58,7 +58,7 @@ const FilePreview: React.FC<Props> = ({ attachedFile, onRemove }) => {
       </div>
       <button
         onClick={onRemove}
-        className="p-1 text-gray-500 hover:text-red-600 focus:outline-none"
+        className="p-1 text-gray-500 hover:text-red-700 focus:outline-none"
         aria-label="Remove file"
       >
         <FaTimes size={16} />

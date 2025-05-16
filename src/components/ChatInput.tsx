@@ -89,7 +89,7 @@ const ChatInput: React.FC<Props> = ({
         <button
           onClick={handleAttachClick}
           disabled={isLoading || !!attachedFile} // Disable if loading or file already attached
-          className={`p-2 text-gray-500 hover:text-red-600 rounded-full focus:outline-none focus:ring-2 focus:ring-red-300 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${attachedFile ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`p-2 text-gray-500 hover:text-red-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-300 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${attachedFile ? 'opacity-50 cursor-not-allowed' : ''}`}
           aria-label="Attach file"
         >
           <FaPaperclip size={20} />
@@ -115,11 +115,10 @@ const ChatInput: React.FC<Props> = ({
           disabled={isLoading}
         />
 
-        {/* Send Button / Loading Spinner */}
         <button
           onClick={onSendMessage}
           disabled={!canSend}
-          className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+          className="p-2 bg-red-500 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           aria-label={isLoading ? 'Sending...' : 'Send message'}
         >
           {isLoading ? <FaSpinner className="animate-spin" size={20} /> : <FaPaperPlane size={20} />}
