@@ -1,8 +1,8 @@
 import React, { useRef, useState, ChangeEvent, KeyboardEvent } from 'react';
 import { FaPaperPlane, FaPaperclip, FaSpinner } from 'react-icons/fa';
 import FilePreview from './FilePreview';
-import { AttachedFile } from '@/lib/types';
-import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE_MB, validateFile } from '@/utils/fileHelper';
+import { AttachedFile, AppConfig } from '@/lib/types';
+import { validateFile } from '@/utils/fileHelper';
 
 interface Props {
   input: string;
@@ -12,6 +12,7 @@ interface Props {
   onRemoveFile: () => void;
   isLoading: boolean;
   attachedFile: AttachedFile | null;
+  appConfig: AppConfig | null;
 }
 
 const ChatInput: React.FC<Props> = ({
@@ -22,6 +23,7 @@ const ChatInput: React.FC<Props> = ({
   onRemoveFile,
   isLoading,
   attachedFile,
+  appConfig,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -32,13 +34,12 @@ const ChatInput: React.FC<Props> = ({
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setFileError(null); // Clear previous errors
+    setFileError(null);
     const file = event.target.files?.[0];
     if (file) {
-      const validationError = validateFile(file);
+      const validationError = validateFile(file, appConfig);
       if (validationError) {
         setFileError(validationError);
-        // Clear the input value so the user can select again if needed
         if (fileInputRef.current) fileInputRef.current.value = '';
         return;
       }
@@ -98,7 +99,7 @@ const ChatInput: React.FC<Props> = ({
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
-          accept={ALLOWED_FILE_TYPES.join(',')} // Use allowed types
+          accept={appConfig?.allowedFileTypes.join(',')}
           className="hidden"
           disabled={isLoading || !!attachedFile}
         />
@@ -125,7 +126,7 @@ const ChatInput: React.FC<Props> = ({
         </button>
       </div>
       <p className="text-xs text-gray-400 mt-1 text-center">
-        Attach one image or PDF (Max {MAX_FILE_SIZE_MB}MB). Shift+Enter for newline.
+        Attach one image or PDF (Max {appConfig?.maxFileSizeMB}MB). Shift+Enter for newline.
       </p>
     </div>
   );

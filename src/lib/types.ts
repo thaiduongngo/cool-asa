@@ -91,3 +91,8 @@ export declare interface Content {
   parts: Part[];
   role: string;
 }
+
+export declare interface AppConfig {
+  maxFileSizeMB: number,
+  allowedFileTypes: [string],
+}

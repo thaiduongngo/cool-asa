@@ -1,13 +1,4 @@
-import { ApiFileData } from '@/lib/types';
-
-export const MAX_FILE_SIZE_MB = 50;
-export const ALLOWED_FILE_TYPES = [
-  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/tiff', 'image/bmp', 'image/apng', 'image/svg+xml',
-  'audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/aac',
-  'video/mp4', 'video/mpeg', 'video/ogg', 'video/x-msvideo', 'video/webm',
-  'text/plain', 'text/csv', 'text/html', 'text/calendar',
-  'application/pdf', 'application/epub+zip', 'application/json',
-];
+import { ApiFileData, AppConfig } from '@/lib/types';
 
 export const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -18,18 +9,21 @@ export const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-export const validateFile = (file: File): string | null => {
-  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-    return `Invalid file type. Allowed: ${ALLOWED_FILE_TYPES.join(', ')}`;
+export const validateFile = (file: File, appConfig: AppConfig | null): string | null => {
+  if (!appConfig) {
+    throw new Error(`Application Config is not defined.`);
   }
-  if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-    return `File is too large. Max size: ${MAX_FILE_SIZE_MB}MB`;
+  if (!appConfig.allowedFileTypes?.includes(file.type)) {
+    return `Invalid file type. Allowed: ${appConfig?.allowedFileTypes?.join(', ')}`;
+  }
+  if (file.size > appConfig.maxFileSizeMB * 1024 * 1024) {
+    return `File is too large. Max size: ${appConfig.maxFileSizeMB}MB`;
   }
   return null; // File is valid
 }
 
-export const prepareFileDataForApi = async (file: File): Promise<ApiFileData | null> => {
-  const validationError = validateFile(file);
+export const prepareFileDataForApi = async (file: File, appConfig: AppConfig | null): Promise<ApiFileData | null> => {
+  const validationError = validateFile(file, appConfig);
   if (validationError) {
     console.error("File validation failed:", validationError);
     // Optionally, throw an error or show a user message here

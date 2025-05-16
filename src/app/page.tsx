@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Part } from '@/lib/types';
+import { Part, AppConfig } from '@/lib/types';
 import Sidebar from '@/components/Sidebar';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
@@ -16,6 +16,7 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
+  const [appConfig, setAppConfig] = useState<AppConfig | null>(null);
 
   const [recentPrompts, setRecentPrompts] = useState<RecentPrompt[]>([]); // No longer useLocalStorage
   const [isRecentPromptsLoading, setIsRecentPromptsLoading] = useState(true);
@@ -25,6 +26,21 @@ export default function ChatPage() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const initializePage = useCallback(async () => {
+    try {
+      const response = await fetch('/api/config');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to fetch config" }));
+        throw new Error(errorData.error || `Failed to fetch chat config: ${response.statusText}`);
+      }
+      const appConfig: AppConfig = await response.json();
+      setAppConfig(appConfig);
+    } catch (err: any) {
+      console.error('Error fetching config:', err);
+      setError(`Could not load chat history: ${err.message}`);
+    }
+  }, []);
 
   /**
    * Fetch Initial Recent Prompts
@@ -78,15 +94,31 @@ export default function ChatPage() {
     }
   }, [currentChatId]); // Add currentChatId to dependencies if its change should trigger reload
 
-  useEffect(() => {
-    fetchChatHistory();
-    fetchRecentPrompts(); // Fetch recent prompts on mount
-
-    const checkScreenSize = () => setIsSidebarOpen(window.innerWidth >= 768);
+  const reloadPage = () => {
+    const checkScreenSize = () => {
+      setIsSidebarOpen(window.innerWidth >= 768);
+    };
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, [fetchChatHistory, fetchRecentPrompts]); // Add fetchRecentPrompts
+    return () => {
+      window.removeEventListener('resize', checkScreenSize);
+    };
+  };
+
+  useEffect(() => {
+    fetchChatHistory();
+    reloadPage();
+  }, [fetchChatHistory]);
+
+  useEffect(() => {
+    fetchRecentPrompts();
+    reloadPage();
+  }, [fetchRecentPrompts]);
+
+  useEffect(() => {
+    initializePage();
+    reloadPage();
+  }, [initializePage]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -131,7 +163,7 @@ export default function ChatPage() {
     let userMessageContent: string | Part[] = trimmedInput;
 
     if (attachedFile) {
-      fileDataForApi = await prepareFileDataForApi(attachedFile.file);
+      fileDataForApi = await prepareFileDataForApi(attachedFile.file, appConfig);
       if (!fileDataForApi) {
         setError("Error processing file. Please try again.");
         setIsLoading(false);
@@ -434,6 +466,7 @@ export default function ChatPage() {
           onRemoveFile={handleRemoveFile}
           isLoading={isLoading}
           attachedFile={attachedFile}
+          appConfig={appConfig}
         />
       </main>
     </div>
