@@ -7,22 +7,22 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
 *   **New Chat:** Start fresh conversations.
 *   **Real-time Chat Response Streaming:** Messages from the AI model appear token by token.
 *   **Multimodal Input:**
-    *   Attach image files (JPEG, PNG, WEBP, GIF) to prompts.
-    *   Attach PDF files to prompts.
+    *   Attach image , audio, video, PDF files to prompts.
     *   Uses Google's Gemini model.
+    *   Uses OllamaJS https://github.com/ollama/ollama-js to integrate with models locally.
 *   **Markdown Rendering:** Chat messages support Markdown formatting for rich text display.
 *   **Recent Prompts:**
-    *   Displays the top 5 most recent unique prompts.
+    *   Configurable display the top x most recent unique prompts.
     *   Option to delete individual recent prompts.
-    *   Stored in `localStorage`.
+    *   Persisted using **Redis**.
 *   **Chat History:**
-    *   Displays the top 5 most recent chat sessions.
+    *   Configurable display the top x most recent chat sessions.
     *   Option to load and continue a previous chat session.
     *   Option to delete individual chat sessions.
     *   Persisted using **Redis**.
+    *   Deletable an individual chat message.
 *   **Responsive Design:** Adapts to various screen sizes (mobile, tablet, desktop).
 *   **Styled with Tailwind CSS:** Modern and appealing user interface.
-*   **Src Directory Structure:** Follows modern Next.js project organization.
 
 ## Tech Stack
 
@@ -36,9 +36,9 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     *   Edge runtime for Gemini API streaming
 *   **AI Model:**
     *   Google Gemini models via `@google/genai` SDK
+    *   Google 
 *   **Database/Persistence:**
-    *   **Redis** (for chat history) via `ioredis`
-    *   `localStorage` (for recent prompts)
+    *   **Redis** (for both chat history and recent prompts) via `ioredis`
 *   **Utilities:**
     *   `react-icons` for UI icons
     *   `uuid` for generating unique IDs
@@ -50,6 +50,7 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
 *   npm, yarn, or pnpm
 *   A Google API Key with the Gemini API enabled.
 *   A running Redis instance (local or cloud-based like Upstash).
+*   A installed and running Ollama server instance.
 
 ## Getting Started
 
@@ -68,6 +69,11 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
 
 3.  **Install Ollama Server**
     https://github.com/ollama/ollama
+    
+    Run a server instance:
+    ```bash
+    ollama serve
+    ```
 
 4.  **Set up Environment Variables:**
     Create a `.env.local` file in the root of your project and add the following environment variables:
@@ -93,11 +99,8 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     ```bash
     docker run -d --name redis -p 6379:6379 redis:<version>
     ```
-    Execute Redis client within Docker:
-    ```bash
-    docker exec -it redis redis-cli
-    ```
     https://redis.io/docs/latest/operate/oss_and_stack/install/install-stack/docker/
+
 6.  **Run the development server:**
     ```bash
     npm run dev
@@ -106,17 +109,6 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     ```
     The application will be available at `http://localhost:3000`.
 
-
-## Key Implementation Details
-
-*   **Chat Streaming:** Implemented manually using `ReadableStream` on the backend and `fetch` with `TextDecoder` on the frontend for real-time updates.
-*   **Multimodal Input:** Files are converted to Base64 and sent as `inlineData` parts to the Gemini API.
-*   **Redis for Chat History:**
-    *   Chat sessions are stored as JSON strings in Redis.
-    *   A sorted set (`CHAT_INDEX_KEY`) is used to maintain the order and recency of chats, scored by `lastUpdated` timestamp.
-    *   API routes handle CRUD operations for chat history, ensuring persistence beyond browser sessions.
-*   **Markdown Rendering:** `react-markdown` with `remark-gfm` processes model responses, and `@tailwindcss/typography` provides default styling.
-
 ## API Endpoints
 
 *   `POST /api/chat`: Handles chat requests, streams responses from Gemini.
@@ -124,6 +116,9 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
 *   `POST /api/chat/history`: Saves or updates a chat session in Redis.
 *   `GET /api/chat/history/[chatId]`: Retrieves a specific chat session by ID from Redis.
 *   `DELETE /api/chat/history/[chatId]`: Deletes a specific chat session by ID from Redis.
+*   `GET /api/prompts`: Retrieves the list of recent prompts from Redis.
+*   `POST /api/prompts`: Saves a prompt in Redis.
+*   `POST /api/prompts/delete`: Deletes a specific prompt by ID(text) from Redis.
 
 ## To-Do / Future Enhancements
 
