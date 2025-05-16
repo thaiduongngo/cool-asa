@@ -92,7 +92,7 @@ export default function ChatPage() {
     } finally {
       setIsHistoryLoading(false);
     }
-  }, [currentChatId]); // Add currentChatId to dependencies if its change should trigger reload
+  }, [currentChatId]);
 
   const reloadPage = () => {
     const checkScreenSize = () => {
@@ -100,9 +100,6 @@ export default function ChatPage() {
     };
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
-    return () => {
-      window.removeEventListener('resize', checkScreenSize);
-    };
   };
 
   useEffect(() => {
@@ -147,9 +144,11 @@ export default function ChatPage() {
     } catch (err) {
       console.error('Error in addRecentPrompt:', err);
     }
-  }, [fetchRecentPrompts]); // Depends on fetchRecentPrompts
+  }, [fetchRecentPrompts]);
 
-  // --- Core Chat Logic (handleSendMessage) ---
+  /**
+   *  Core Chat Logic (handleSendMessage).
+   **/
   const handleSendMessage = useCallback(async () => {
     const trimmedInput = input.trim();
     if (!trimmedInput && !attachedFile) return;
@@ -258,13 +257,12 @@ export default function ChatPage() {
     } finally {
       setIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input, messages, attachedFile, currentChatId, addRecentPrompt]);
 
   const handleDeletePrompt = useCallback(async (promptIdOrText: string) => {
     try {
-      const response = await fetch('/api/prompts/delete', {
-        method: 'POST', // Using POST for delete as we send text in body
+      const response = await fetch('/api/prompts', {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: promptIdOrText }),
       });

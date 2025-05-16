@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { redis, CHAT_HISTORY_PREFIX, CHAT_INDEX_KEY } from '@/lib/redis';
 import { ChatSession } from '@/lib/types';
 
-export const runtime = 'nodejs';
-
 // GET /api/chat/history/[chatId] - Fetches a single chat session
 export async function GET(
   req: NextRequest,
