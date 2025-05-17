@@ -18,11 +18,12 @@ export default function ChatPage() {
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
   const [appConfig, setAppConfig] = useState<AppConfig | null>(null);
 
-  const [recentPrompts, setRecentPrompts] = useState<RecentPrompt[]>([]); // No longer useLocalStorage
+  const [recentPrompts, setRecentPrompts] = useState<RecentPrompt[]>([]);
   const [isRecentPromptsLoading, setIsRecentPromptsLoading] = useState(true);
 
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+  const [isNewChatAdded, setIsNewChatAdded] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -77,10 +78,7 @@ export default function ChatPage() {
       }
       const data: ChatSession[] = await response.json();
       setChatHistory(data);
-      // Optional: Load the most recent chat if history is not empty and no chat is active
-      if (data.length > 0 && !currentChatId) {
-        // handleLoadChat(data[0].id); // Or simply let user pick
-      } else if (data.length === 0 && !currentChatId) {
+      if (data.length === 0 && !currentChatId) {
         startNewChat(false); // Start a new chat session if history is empty, don't clear if already new
       }
     } catch (err: any) {
@@ -92,7 +90,7 @@ export default function ChatPage() {
     } finally {
       setIsHistoryLoading(false);
     }
-  }, [currentChatId]);
+  }, [isNewChatAdded]);
 
   const reloadPage = () => {
     const checkScreenSize = () => {
@@ -122,7 +120,7 @@ export default function ChatPage() {
   }, [messages]);
 
   /**
-   * Helper Functions (Modified for API calls)
+   * Add Prompts.
    */
   const addRecentPrompt = useCallback(async (promptText: string) => {
     if (!promptText.trim()) return;
@@ -194,7 +192,7 @@ export default function ChatPage() {
     if (trimmedInput) {
       addRecentPrompt(trimmedInput);
     }
-    setInput('');
+    setInput("");
     setAttachedFile(null);
 
     const apiHistory = messages.map(msg => ({
@@ -237,13 +235,17 @@ export default function ChatPage() {
       }
 
       if (streamEnded && !error) {
-        const finalModelMessage: Message = { id: modelMessageId, role: 'model', content: modelResponse, timestamp: Date.now() };
-        setMessages(prev => {
-          const finalMessages = prev.map(msg => msg.id === modelMessageId ? finalModelMessage : msg);
-          saveChatSession(chatId, finalMessages);
-          return finalMessages;
-        });
+        const finalModelMessage: Message = {
+          id: modelMessageId,
+          role: 'model', content:
+            modelResponse,
+          timestamp: Date.now()
+        };
 
+        const finalMessages = [...messages, userMessage, finalModelMessage];
+        saveChatSession(chatId, finalMessages);
+        setMessages(finalMessages);
+        setIsNewChatAdded(false);
       } else if (!streamEnded) {
         setError("The response stream ended unexpectedly.");
         setMessages(prev => prev.filter(msg => msg.id !== modelMessageId));
@@ -332,7 +334,11 @@ export default function ChatPage() {
   const startNewChat = (clearCurrentId: boolean = true) => {
     setMessages([]);
     setInput('');
-    if (clearCurrentId) setCurrentChatId(uuidv4());
+
+    if (clearCurrentId) {
+      setCurrentChatId(uuidv4());
+      setIsNewChatAdded(true);
+    }
     setError(null);
     setIsLoading(false);
     setAttachedFile(null);
