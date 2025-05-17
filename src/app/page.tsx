@@ -166,11 +166,20 @@ export default function ChatPage() {
         setIsLoading(false);
         return;
       }
-      // Convert @google/generative-ai Part to local Part type
-      const filePart: Part = { inlineData: { mimeType: fileDataForApi.mimeType, data: fileDataForApi.base64Data } };
-      userMessageContent = trimmedInput
-        ? [{ text: trimmedInput } as Part, filePart]
-        : [filePart];
+
+      // Construct InlineDataPart
+      const filePart: Part = {
+        inlineData:
+        {
+          mimeType: fileDataForApi.mimeType,
+          data: fileDataForApi.base64Data,
+        }
+      };
+
+      // Construct TextPart
+      const textPart: Part = { text: trimmedInput };
+
+      userMessageContent = trimmedInput ? [textPart, filePart] : [filePart];
     }
 
     const userMessage: Message = {
@@ -180,8 +189,8 @@ export default function ChatPage() {
       timestamp: Date.now(),
       ...(attachedFile && {
         fileInfo: {
-          name: attachedFile.file.name, type: attachedFile.file.type
-
+          name: attachedFile.file.name,
+          type: attachedFile.file.type,
         }
       })
     };

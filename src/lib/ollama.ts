@@ -21,17 +21,18 @@ const generateContentStream = async (contents: Content[]) => {
   ];
 
   contents.forEach((content: Content) => {
-    const mes = content.parts.map((part: Part) => {
-      return part.inlineData?.data ? {
-        role: content.role === MODEL ? ASSISTANT : content.role,
-        content: "User's attached file.",
-        images: [part.inlineData.data]
-      } : {
-        role: content.role === MODEL ? ASSISTANT : content.role,
-        content: part.text ?? "",
-      };
+    let msg = {
+      role: content.role,
+      content: "",
+      images: [] as string[],
+    };
+    content.parts.forEach((part: Part) => {
+      if (part.text) msg.content = part.text
+      if (part.inlineData?.data) {
+        msg.images?.push(part.inlineData.data);
+      }
     });
-    messages.push(...mes);
+    messages.push(msg);
   });
 
   return await ollama.chat(
