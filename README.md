@@ -94,7 +94,7 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     MAX_RECENT_PROMPTS=5 # Customize max recent prompts
     MAX_FILE_SIZE_MB=100
     ALLOWED_FILE_TYPES="'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/tiff', 'image/bmp', 'image/apng', 'image/svg+xml','audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/aac', 'video/mp4', 'video/mpeg', 'video/ogg', 'video/x-msvideo', 'video/webm', 'text/plain', 'text/csv', 'text/html', 'text/calendar', 'application/pdf', 'application/epub+zip', 'application/json'"
-
+    SYSTEM_INSTRUCTION="Trả lời chi tiết bằng tiếng Việt. Responses are rendered in markdown with clear indents and highlights."
     ```
 
 5.  **Ensure Redis is running:**
@@ -121,7 +121,7 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
 *   `DELETE /api/chat/history/[chatId]`: Deletes a specific chat session by ID from Redis.
 *   `GET /api/prompts`: Retrieves the list of recent prompts from Redis.
 *   `POST /api/prompts`: Saves a prompt in Redis.
-*   `POST /api/prompts/delete`: Deletes a specific prompt by ID(text) from Redis.
+*   `DELETE /api/prompts`: Deletes a specific prompt by ID(text) from Redis.
 
 ## To-Do / Future Enhancements
 

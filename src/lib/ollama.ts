@@ -13,12 +13,12 @@ const OPTIONS = {
 }
 
 const generateContentStream = async (contents: Content[]) => {
-  let messages: Message[] = [
+  let messages: Message[] = SYSTEM_INSTRUCTION ? [
     {
       role: SYSTEM,
       content: SYSTEM_INSTRUCTION
     }
-  ];
+  ] : [];
 
   contents.forEach((content: Content) => {
     let msg = {

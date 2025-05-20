@@ -84,7 +84,6 @@ export default function ChatPage() {
     } catch (err: any) {
       console.error('Error fetching chat history:', err);
       setError(`Could not load chat history: ${err.message}`);
-      // Proceed with an empty history if fetch fails
       setChatHistory([]);
       startNewChat(false);
     } finally {
@@ -343,10 +342,9 @@ export default function ChatPage() {
   const startNewChat = (clearCurrentId: boolean = true) => {
     setMessages([]);
     setInput('');
-
+    setIsNewChatAdded(true);
     if (clearCurrentId) {
       setCurrentChatId(uuidv4());
-      setIsNewChatAdded(true);
     }
     setError(null);
     setIsLoading(false);

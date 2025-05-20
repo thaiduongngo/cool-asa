@@ -7,7 +7,7 @@ const METADATA = {
 
 export { METADATA }
 
-export const SYSTEM_INSTRUCTION = `Trả lời chi tiết bằng tiếng Việt. Responses are rendered in markdown with clear indents and highlights.`;
+export const SYSTEM_INSTRUCTION = process.env.SYSTEM_INSTRUCTION;
 
 export const GOOGLE = "GOOGLE";
 export const OLLAMA = "OLLAMA";
