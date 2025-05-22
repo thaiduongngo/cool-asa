@@ -15,6 +15,12 @@ if (!API_KEY) {
 }
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
+
+const tools = [
+  { urlContext: {} },
+  { googleSearch: {} },
+];
+
 const config = {
   temperature: 0,
   topP: 0.95,
@@ -43,6 +49,7 @@ const config = {
       text: SYSTEM_INSTRUCTION,
     }
   ],
+  tools: tools,
 };
 
 const generateContentStream = async (contents: Content[]) => {

@@ -22,7 +22,7 @@ const generateContentStream = async (contents: Content[]) => {
 
   contents.forEach((content: Content) => {
     let msg = {
-      role: content.role,
+      role: content.role === MODEL ? ASSISTANT : content.role,
       content: "",
       images: [] as string[],
     };
