@@ -2,6 +2,8 @@ import {
   GoogleGenAI,
   HarmCategory,
   HarmBlockThreshold,
+  GenerateContentConfig,
+  ThinkingConfig,
 } from '@google/genai';
 import { Content } from '@/lib/types';
 import { SYSTEM_INSTRUCTION } from '@/lib/constants'
@@ -21,7 +23,12 @@ const tools = [
   { googleSearch: {} },
 ];
 
-const config = {
+const thinkingConfig: ThinkingConfig = {
+  includeThoughts: true,
+  thinkingBudget: 8192,
+}
+
+const config: GenerateContentConfig = {
   temperature: 0,
   topP: 0.95,
   maxOutputTokens: 65536,
@@ -50,6 +57,7 @@ const config = {
     }
   ],
   tools: tools,
+  thinkingConfig: thinkingConfig,
 };
 
 const generateContentStream = async (contents: Content[]) => {
