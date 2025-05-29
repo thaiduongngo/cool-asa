@@ -3,6 +3,7 @@ import { FaPaperPlane, FaPaperclip, FaSpinner } from 'react-icons/fa';
 import FilePreview from './FilePreview';
 import { AttachedFile, AppConfig } from '@/lib/types';
 import { validateFile } from '@/utils/fileHelper';
+import AudioRecorder from './AudioRecorder'
 
 interface Props {
   input: string;
@@ -10,8 +11,10 @@ interface Props {
   onSendMessage: () => void;
   onAttachFile: (file: File) => void;
   onRemoveFile: () => void;
+  onVoicePrompt: (auBlob: Blob | null) => void;
   isLoading: boolean;
   attachedFile: AttachedFile | null;
+  auBlob: Blob | null;
   appConfig: AppConfig | null;
 }
 
@@ -21,8 +24,10 @@ const ChatInput: React.FC<Props> = ({
   onSendMessage,
   onAttachFile,
   onRemoveFile,
+  onVoicePrompt,
   isLoading,
   attachedFile,
+  auBlob,
   appConfig,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -71,7 +76,7 @@ const ChatInput: React.FC<Props> = ({
     if (fileInputRef.current) fileInputRef.current.value = ''; // Clear file input
   }
 
-  const canSend = !isLoading && (input.trim().length > 0 || !!attachedFile);
+  const canSend = !isLoading && (input.trim().length > 0 || !!attachedFile || !!auBlob);
 
   return (
     <div className="p-4 border-t border-gray-200 bg-white">
@@ -86,6 +91,7 @@ const ChatInput: React.FC<Props> = ({
       <FilePreview attachedFile={attachedFile} onRemove={handleRemoveFileInternal} />
 
       <div className="flex items-end gap-2 mt-2">
+        <AudioRecorder onVoicePrompt={onVoicePrompt} />
         {/* Attach Button */}
         <button
           onClick={handleAttachClick}

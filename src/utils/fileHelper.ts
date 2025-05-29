@@ -42,3 +42,17 @@ export const prepareFileDataForApi = async (file: File, appConfig: AppConfig | n
     return null;
   }
 }
+
+export const getAudioBlobFromUrl = async (url: string): Promise<Blob | null> => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    return new Blob([arrayBuffer], { type: 'audio/mpeg' }); // Adjust the type if needed
+  } catch (error) {
+    console.error("Error fetching audio:", error);
+    return null;
+  }
+}

@@ -52,6 +52,11 @@ const ChatMessage: React.FC<Props> = ({ message, onDeleteMessage }) => {
             Attached: {message.fileInfo.name} ({message.fileInfo.type})
           </div>
         )}
+        {message.voicePrompt && (
+          <div className={`mb-2 text-xs italic opacity-80 border-b pb-1 ${isUser ? 'border-red-300' : 'border-gray-300'}`}>
+            {message.voicePrompt.name} ({message.voicePrompt.type})
+          </div>
+        )}
         <div
           className={`
                 prose prose-sm max-w-none

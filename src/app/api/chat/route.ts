@@ -5,9 +5,9 @@ import { Prompt, Part } from '@/lib/types';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { prompt, history, fileData }: Prompt = body;
+    const { prompt, voicePrompt, history, fileData }: Prompt = body;
 
-    if (!prompt && !fileData) {
+    if (!prompt && !fileData && !voicePrompt) {
       return NextResponse.json({ error: 'Prompt or file is required' }, { status: 400 });
     }
 
@@ -24,6 +24,19 @@ export async function POST(req: NextRequest) {
         inlineData: {
           mimeType: fileData.mimeType,
           data: fileData.base64Data,
+        },
+      });
+    }
+
+    if (voicePrompt) {
+      // Validate again on server-side just in case
+      if (!voicePrompt.mimeType || !voicePrompt.base64Data) {
+        return NextResponse.json({ error: 'Invalid voice prompt received' }, { status: 400 });
+      }
+      userParts.push({
+        inlineData: {
+          mimeType: voicePrompt.mimeType,
+          data: voicePrompt.base64Data,
         },
       });
     }

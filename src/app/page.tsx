@@ -7,11 +7,12 @@ import Sidebar from '@/components/Sidebar';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
 import { Message, ChatSession, RecentPrompt, ApiFileData, AttachedFile } from '@/lib/types';
-import { prepareFileDataForApi } from '@/utils/fileHelper';
+import { prepareFileDataForApi, fileToBase64 } from '@/utils/fileHelper';
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState<string>("");
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
@@ -148,7 +149,7 @@ export default function ChatPage() {
    **/
   const handleSendMessage = useCallback(async () => {
     const trimmedInput = input.trim();
-    if (!trimmedInput && !attachedFile) return;
+    if (!trimmedInput && !attachedFile && !audioBlob) return;
 
     setIsLoading(true);
     setError(null);
@@ -156,7 +157,34 @@ export default function ChatPage() {
     const chatId = currentChatId ?? uuidv4();
     const userMessageId = uuidv4();
     let fileDataForApi: ApiFileData | null = null;
-    let userMessageContent: string | Part[] = trimmedInput;
+    let userMessageContent: Part[] = [];
+    let textPart: Part | null = null;
+    let voicePart: Part | null = null;
+    let voiceDataForApi: ApiFileData | null = null;
+    let filePart: Part | null = null;
+
+    if (trimmedInput) {
+      textPart = { text: trimmedInput };
+      userMessageContent.push(textPart);
+    }
+
+    if (audioBlob) {
+      const base64VoiceData = await fileToBase64(audioBlob as File);
+      // Construct voicePart
+      voicePart = {
+        inlineData:
+        {
+          mimeType: "audio/webm",
+          data: base64VoiceData,
+        }
+      };
+      userMessageContent.push(voicePart);
+      voiceDataForApi = {
+        mimeType: voicePart.inlineData.mimeType,
+        base64Data: base64VoiceData,
+        name: `Voice prompt ${uuidv4()}`,
+      };
+    }
 
     if (attachedFile) {
       fileDataForApi = await prepareFileDataForApi(attachedFile.file, appConfig);
@@ -165,9 +193,8 @@ export default function ChatPage() {
         setIsLoading(false);
         return;
       }
-
-      // Construct InlineDataPart
-      const filePart: Part = {
+      // Construct filePart
+      filePart = {
         inlineData:
         {
           mimeType: fileDataForApi.mimeType,
@@ -175,10 +202,7 @@ export default function ChatPage() {
         }
       };
 
-      // Construct TextPart
-      const textPart: Part = { text: trimmedInput };
-
-      userMessageContent = trimmedInput ? [textPart, filePart] : [filePart];
+      userMessageContent.push(filePart);
     }
 
     const userMessage: Message = {
@@ -191,7 +215,14 @@ export default function ChatPage() {
           name: attachedFile.file.name,
           type: attachedFile.file.type,
         }
-      })
+      }),
+      ...(voiceDataForApi && {
+        voicePrompt: {
+          name: voiceDataForApi.name,
+          data: voiceDataForApi.base64Data,
+          type: voiceDataForApi.mimeType,
+        }
+      }),
     };
 
     const newMessages = [...messages, userMessage];
@@ -213,7 +244,13 @@ export default function ChatPage() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: trimmedInput, history: apiHistory, fileData: fileDataForApi }),
+        body: JSON.stringify(
+          {
+            prompt: trimmedInput,
+            voicePrompt: voiceDataForApi,
+            history: apiHistory,
+            fileData: fileDataForApi,
+          }),
       });
 
       if (!response.ok) {
@@ -226,7 +263,12 @@ export default function ChatPage() {
       const decoder = new TextDecoder();
       let modelResponse = '';
       const modelMessageId = uuidv4();
-      setMessages(prev => [...prev, { id: modelMessageId, role: 'model', content: '...', timestamp: Date.now() }]);
+      setMessages(prev => [...prev, {
+        id: modelMessageId,
+        role: 'model',
+        content: '...',
+        timestamp: Date.now()
+      }]);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -266,8 +308,9 @@ export default function ChatPage() {
       }
     } finally {
       setIsLoading(false);
+      handleVoicePrompt(null);
     }
-  }, [input, messages, attachedFile, currentChatId, addRecentPrompt]);
+  }, [input, audioBlob, messages, attachedFile, currentChatId, addRecentPrompt]);
 
   const handleDeletePrompt = useCallback(async (promptIdOrText: string) => {
     try {
@@ -291,13 +334,17 @@ export default function ChatPage() {
     setInput(promptText);
   };
 
+  const handleVoicePrompt = (auBlob: Blob | null) => {
+    setAudioBlob(auBlob);
+  };
+
   const saveChatSession = async (chatId: string, finalMessages: Message[]) => {
     if (finalMessages.length === 0) return;
 
-    const chatTitle = typeof finalMessages[0].content === 'string'
+    const chatTitle = (typeof finalMessages[0].content === 'string'
       ? finalMessages[0].content.substring(0, 255)
-      : finalMessages[0].fileInfo?.name
-      || "Untitled Chat";
+      : finalMessages[0].voicePrompt ? finalMessages[0].voicePrompt.name :
+        finalMessages[0].fileInfo ? finalMessages[0].fileInfo.name : "Untitled Chat");
 
     const sessionToSave: ChatSession = {
       id: chatId,
@@ -341,11 +388,12 @@ export default function ChatPage() {
 
   const startNewChat = (clearCurrentId: boolean = true) => {
     setMessages([]);
-    setInput('');
+    setInput("");
     setIsNewChatAdded(true);
     if (clearCurrentId) {
       setCurrentChatId(uuidv4());
     }
+    setAudioBlob(null);
     setError(null);
     setIsLoading(false);
     setAttachedFile(null);
@@ -475,8 +523,10 @@ export default function ChatPage() {
           onSendMessage={handleSendMessage}
           onAttachFile={handleAttachFile}
           onRemoveFile={handleRemoveFile}
+          onVoicePrompt={handleVoicePrompt}
           isLoading={isLoading}
           attachedFile={attachedFile}
+          auBlob={audioBlob}
           appConfig={appConfig}
         />
       </main>

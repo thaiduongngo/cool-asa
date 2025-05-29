@@ -52,7 +52,15 @@ export interface Message {
   role: Role;
   content: string | Part[];
   timestamp: number;
-  fileInfo?: { name: string; type: string };
+  fileInfo?: {
+    name: string;
+    type: string;
+  };
+  voicePrompt?: {
+    name: string;
+    data: string;
+    type: string;
+  };
 }
 
 export interface ChatSession {
@@ -80,6 +88,7 @@ export interface AttachedFile {
 
 export interface Prompt {
   prompt: string;
+  voicePrompt?: ApiFileData;
   history: {
     role: Role,
     parts: Part[]
