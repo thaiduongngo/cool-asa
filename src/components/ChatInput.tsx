@@ -91,7 +91,7 @@ const ChatInput: React.FC<Props> = ({
       <FilePreview attachedFile={attachedFile} onRemove={handleRemoveFileInternal} />
 
       <div className="flex items-end gap-2 mt-2">
-        <AudioRecorder onVoicePrompt={onVoicePrompt} />
+        <AudioRecorder onVoicePrompt={onVoicePrompt} auBlob={auBlob} />
         {/* Attach Button */}
         <button
           onClick={handleAttachClick}

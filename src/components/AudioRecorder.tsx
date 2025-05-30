@@ -1,16 +1,28 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaMicrophone, FaStop } from 'react-icons/fa';
 
 interface Props {
+  auBlob: Blob | null;
   onVoicePrompt: (auBlob: Blob | null) => void;
 }
 
 const AudioRecorder: React.FC<Props> = ({
-  onVoicePrompt
+  auBlob,
+  onVoicePrompt,
 }) => {
   const [recording, setRecording] = useState(false);
+  const [auURL, setAuURL] = useState("");
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    if (auBlob) {
+      setAuURL(URL.createObjectURL(auBlob))
+    }
+    else {
+      setAuURL("");
+    }
+  }, [auBlob]);
 
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -53,7 +65,14 @@ const AudioRecorder: React.FC<Props> = ({
           <FaMicrophone size={20} />
         </button>
       )}
+      {auURL ?
+        <audio src={auURL}
+          controls
+          controlsList="noplaybackrate nodownload"
+          hidden />
+        : " "}
     </div>
+
   );
 };
 

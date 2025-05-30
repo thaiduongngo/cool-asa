@@ -170,6 +170,12 @@ export default function ChatPage() {
 
     if (audioBlob) {
       const base64VoiceData = await fileToBase64(audioBlob as File);
+
+      if (!trimmedInput) {
+        textPart = { text: "Use audio prompt" };
+        userMessageContent.push(textPart);
+      }
+
       // Construct voicePart
       voicePart = {
         inlineData:
@@ -182,7 +188,7 @@ export default function ChatPage() {
       voiceDataForApi = {
         mimeType: voicePart.inlineData.mimeType,
         base64Data: base64VoiceData,
-        name: `Voice prompt ${uuidv4()}`,
+        name: `Audio prompt ${uuidv4()}`,
       };
     }
 
