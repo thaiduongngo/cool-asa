@@ -23,15 +23,23 @@ const tools = [
   { googleSearch: {} },
 ];
 
-const thinkingConfig: ThinkingConfig = {
-  includeThoughts: true,
-  thinkingBudget: 8192,
-}
+const thinkingConfig = (): ThinkingConfig => {
+  if (process.env.INCLUDE_THOUGHTS && process.env.INCLUDE_THOUGHTS.toLowerCase() === "true") {
+    return {
+      includeThoughts: true,
+      thinkingBudget: Number(process.env.THINKING_BUDGET ?? 8192),
+    };
+  } else {
+    return {
+      includeThoughts: false,
+    };
+  }
+};
 
 const config: GenerateContentConfig = {
-  temperature: 0,
+  temperature: Number(process.env.TEMPERATURE ?? 0),
   topP: 0.95,
-  maxOutputTokens: 65536,
+  maxOutputTokens: Number(process.env.MAX_OUTPUT_TOKENS ?? 65536),
   safetySettings: [
     {
       category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -57,7 +65,7 @@ const config: GenerateContentConfig = {
     }
   ],
   tools: tools,
-  thinkingConfig: thinkingConfig,
+  thinkingConfig: thinkingConfig(),
 };
 
 const generateContentStream = async (contents: Content[]) => {

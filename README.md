@@ -94,7 +94,11 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     MAX_RECENT_PROMPTS=5 # Customize max recent prompts
     MAX_FILE_SIZE_MB=100
     ALLOWED_FILE_TYPES="'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/tiff', 'image/bmp', 'image/apng', 'image/svg+xml','audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/aac', 'video/mp4', 'video/mpeg', 'video/ogg', 'video/x-msvideo', 'video/webm', 'text/plain', 'text/csv', 'text/html', 'text/calendar', 'application/pdf', 'application/epub+zip', 'application/json'"
-    SYSTEM_INSTRUCTION="Trả lời chi tiết bằng tiếng Việt. Responses are rendered in markdown with clear indents and highlights."
+    SYSTEM_INSTRUCTION="Trả lời chi tiết bằng tiếng Việt."
+    INCLUDE_THOUGHTS="false"
+    THINKING_BUDGET=8192
+    MAX_OUTPUT_TOKENS=65536
+    TEMPERATURE=0
     ```
 
 5.  **Ensure Redis is running:**

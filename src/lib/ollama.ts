@@ -6,10 +6,8 @@ import { SYSTEM_INSTRUCTION } from '@/lib/constants';
 const DEFAULT_MODEL = "qwen3:8b";
 const MODEL_NAME = process.env.OLLAMA_MODEL || DEFAULT_MODEL;
 const OPTIONS = {
-  num_ctx: 8192,
-  // num_ctx: 65536,
-  // top_p: 0.95,
-  temperature: 0,
+  num_ctx: Number(process.env.MAX_OUTPUT_TOKENS ?? 65536),
+  temperature: Number(process.env.TEMPERATURE ?? 0),
 }
 
 const generateContentStream = async (contents: Content[]) => {
