@@ -4,6 +4,7 @@ import FilePreview from './FilePreview';
 import { AttachedFile, AppConfig } from '@/lib/types';
 import { validateFile } from '@/utils/fileHelper';
 import AudioRecorder from './AudioRecorder'
+import { TextareaAutosize } from '@mui/material';
 
 interface Props {
   input: string;
@@ -92,7 +93,6 @@ const ChatInput: React.FC<Props> = ({
 
       <div className="flex items-end gap-2 mt-2">
         <AudioRecorder onVoicePrompt={onVoicePrompt} auBlob={auBlob} />
-        {/* Attach Button */}
         <button
           onClick={handleAttachClick}
           disabled={isLoading || !!attachedFile} // Disable if loading or file already attached
@@ -101,6 +101,7 @@ const ChatInput: React.FC<Props> = ({
         >
           <FaPaperclip size={20} />
         </button>
+
         <input
           type="file"
           ref={fileInputRef}
@@ -110,15 +111,14 @@ const ChatInput: React.FC<Props> = ({
           disabled={isLoading || !!attachedFile}
         />
 
-        {/* Text Input */}
-        <textarea
+        <TextareaAutosize
           ref={textareaRef}
           value={input}
           onChange={handleTextareaChange}
           onKeyDown={handleKeyDown}
           placeholder="Type your message or attach a file..."
           className="flex-grow p-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-red-300 max-h-40 overflow-y-auto text-sm text-gray-800"
-          rows={1} // Start with one row
+          minRows={1}
           disabled={isLoading}
         />
 
