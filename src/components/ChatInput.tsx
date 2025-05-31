@@ -2,19 +2,20 @@ import React, { useRef, useState, ChangeEvent, KeyboardEvent } from 'react';
 import { FaPaperPlane, FaPaperclip, FaSpinner } from 'react-icons/fa';
 import FilePreview from './FilePreview';
 import { AttachedFile, AppConfig } from '@/lib/types';
-import { validateFile } from '@/utils/fileHelper';
+import { validateFile, MAX_NUM_ATTACHED } from '@/utils/fileHelper';
 import AudioRecorder from './AudioRecorder'
 import { TextareaAutosize } from '@mui/material';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
   input: string;
   onInputChange: (value: string) => void;
   onSendMessage: () => void;
-  onAttachFile: (file: File) => void;
-  onRemoveFile: () => void;
+  onAttachFile: (attachedFile: AttachedFile) => void;
+  onRemoveFile: (id: string) => void;
   onVoicePrompt: (auBlob: Blob | null) => void;
   isLoading: boolean;
-  attachedFile: AttachedFile | null;
+  attachedFiles: AttachedFile[] | [];
   auBlob: Blob | null;
   appConfig: AppConfig | null;
 }
@@ -27,13 +28,15 @@ const ChatInput: React.FC<Props> = ({
   onRemoveFile,
   onVoicePrompt,
   isLoading,
-  attachedFile,
+  attachedFiles,
   auBlob,
   appConfig,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const isAttachedFileAllowed = attachedFiles.length < MAX_NUM_ATTACHED ? true : false;
+  const attachedFileExist = attachedFiles.length > 0 ? true : false;
 
   const handleAttachClick = () => {
     fileInputRef.current?.click();
@@ -49,7 +52,8 @@ const ChatInput: React.FC<Props> = ({
         if (fileInputRef.current) fileInputRef.current.value = '';
         return;
       }
-      onAttachFile(file);
+
+      onAttachFile({ id: uuidv4(), file: file } as AttachedFile);
       // Optional: Clear the input value if you want to allow selecting the same file again after removing it
       // if(fileInputRef.current) fileInputRef.current.value = '';
     }
@@ -65,38 +69,45 @@ const ChatInput: React.FC<Props> = ({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey && !isLoading && (input.trim() || attachedFile)) {
+    if (event.key === 'Enter' && !event.shiftKey && !isLoading && (input.trim() || attachedFileExist || auBlob)) {
       event.preventDefault(); // Prevent newline
       onSendMessage();
     }
   };
 
-  const handleRemoveFileInternal = () => {
-    onRemoveFile();
+  const handleRemoveFileInternal = (id: string) => {
+    onRemoveFile(id);
     setFileError(null); // Clear error when file is removed
     if (fileInputRef.current) fileInputRef.current.value = ''; // Clear file input
   }
 
-  const canSend = !isLoading && (input.trim().length > 0 || !!attachedFile || !!auBlob);
+  const canSend = !isLoading && (input.trim().length > 0 || attachedFileExist || auBlob);
 
   return (
     <div className="p-4 border-t border-gray-200 bg-white">
       {/* File Error Display */}
-      {fileError && (
-        <div className="mb-2 p-2 text-sm text-red-700 bg-red-100 border border-red-300 rounded-md">
-          {fileError}
-        </div>
-      )}
+      {
+        fileError && (
+          <div className="mb-2 p-2 text-sm text-red-700 bg-red-100 border border-red-300 rounded-md">
+            {fileError}
+          </div>
+        )
+      }
 
-      {/* File Preview */}
-      <FilePreview attachedFile={attachedFile} onRemove={handleRemoveFileInternal} />
+      {
+        attachedFiles.map((v) => {
+          return <FilePreview key={v.id} attachedFile={v}
+            onRemove={() => handleRemoveFileInternal(v.id)} />;
+        })
+      }
 
       <div className="flex items-end gap-2 mt-2">
         <AudioRecorder onVoicePrompt={onVoicePrompt} auBlob={auBlob} />
         <button
           onClick={handleAttachClick}
-          disabled={isLoading || !!attachedFile} // Disable if loading or file already attached
-          className={`p-2 text-gray-500 hover:text-red-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-300 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${attachedFile ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isLoading || !isAttachedFileAllowed} // Disable if loading or file already attached
+          className={`p-2 text-gray-500 hover:text-red-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-300 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 
+            ${!isAttachedFileAllowed ? 'opacity-50 cursor-not-allowed' : ''}`}
           aria-label="Attach file"
         >
           <FaPaperclip size={20} />
@@ -108,7 +119,7 @@ const ChatInput: React.FC<Props> = ({
           onChange={handleFileChange}
           accept={appConfig?.allowedFileTypes.join(',')}
           className="hidden"
-          disabled={isLoading || !!attachedFile}
+          disabled={isLoading || !isAttachedFileAllowed}
         />
 
         <TextareaAutosize

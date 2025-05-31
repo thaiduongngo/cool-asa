@@ -1,4 +1,4 @@
-import { ApiFileData, AppConfig } from '@/lib/types';
+import { ApiFileData, AppConfig, AttachedFile } from '@/lib/types';
 
 export const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -20,6 +20,30 @@ export const validateFile = (file: File, appConfig: AppConfig | null): string | 
     return `File is too large. Max size: ${appConfig.maxFileSizeMB}MB`;
   }
   return null; // File is valid
+}
+
+export const prepareFilesDataForApi = async (attachedFiles: AttachedFile[], appConfig: AppConfig | null)
+  : Promise<ApiFileData[]> => {
+  const results = await Promise.all(attachedFiles.map(async (v) => {
+    const validationError = validateFile(v.file, appConfig);
+    if (validationError) {
+      console.error("File validation failed:", validationError);
+      return null;
+    }
+    try {
+      const base64Data = await fileToBase64(v.file);
+      return {
+        mimeType: v.file.type,
+        base64Data,
+        name: v.file.name,
+      };
+    } catch (error) {
+      console.error("Error converting file to Base64:", error);
+      return null;
+    }
+  }));
+  // Optionally filter out nulls if you want only valid files
+  return results.filter((item): item is ApiFileData => item !== null);
 }
 
 export const prepareFileDataForApi = async (file: File, appConfig: AppConfig | null): Promise<ApiFileData | null> => {
@@ -56,3 +80,5 @@ export const getAudioBlobFromUrl = async (url: string): Promise<Blob | null> => 
     return null;
   }
 }
+
+export const MAX_NUM_ATTACHED = 3;

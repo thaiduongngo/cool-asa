@@ -52,10 +52,10 @@ export interface Message {
   role: Role;
   content: string | Part[];
   timestamp: number;
-  fileInfo?: {
+  fileInfos?: {
     name: string;
     type: string;
-  };
+  }[];
   voicePrompt?: {
     name: string;
     data: string;
@@ -82,6 +82,7 @@ export interface ApiFileData {
 }
 
 export interface AttachedFile {
+  id: string;
   file: File;
   previewUrl?: string;
 }
@@ -93,7 +94,7 @@ export interface Prompt {
     role: Role,
     parts: Part[]
   }[],
-  fileData?: ApiFileData
+  filesData?: ApiFileData[],
 }
 
 export declare interface Content {

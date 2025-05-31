@@ -47,11 +47,16 @@ const ChatMessage: React.FC<Props> = ({ message, onDeleteMessage }) => {
           'bg-gray-100 text-gray-800'
           } relative`}
       >
-        {message.fileInfo && (
-          <div className={`mb-2 text-xs italic opacity-80 border-b pb-1 ${isUser ? 'border-red-300' : 'border-gray-300'}`}>
-            Attached: {message.fileInfo.name} ({message.fileInfo.type})
-          </div>
-        )}
+        {
+          message.fileInfos && message.fileInfos.map((v, i) => {
+            return (
+              <div key={i}
+                className={`mb-2 text-xs italic opacity-80 border-b pb-1 ${isUser ? 'border-red-300' : 'border-gray-300'}`}>
+                Attached: {v.name} {v.type}
+              </div>
+            );
+          })
+        }
         {message.voicePrompt && (
           <div className={`mb-2 text-xs italic opacity-80 border-b pb-1 ${isUser ? 'border-red-300' : 'border-gray-300'}`}>
             {message.voicePrompt.name} ({message.voicePrompt.type})

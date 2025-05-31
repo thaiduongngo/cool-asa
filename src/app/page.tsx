@@ -7,7 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
 import { Message, ChatSession, RecentPrompt, ApiFileData, AttachedFile } from '@/lib/types';
-import { prepareFileDataForApi, fileToBase64 } from '@/utils/fileHelper';
+import { prepareFilesDataForApi, fileToBase64 } from '@/utils/fileHelper';
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -16,7 +16,8 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
-  const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  const attachedFilesExist = attachedFiles.length > 0 ? true : false;
   const [appConfig, setAppConfig] = useState<AppConfig | null>(null);
 
   const [recentPrompts, setRecentPrompts] = useState<RecentPrompt[]>([]);
@@ -149,19 +150,19 @@ export default function ChatPage() {
    **/
   const handleSendMessage = useCallback(async () => {
     const trimmedInput = input.trim();
-    if (!trimmedInput && !attachedFile && !audioBlob) return;
+    if (!trimmedInput && !attachedFilesExist && !audioBlob) return;
 
     setIsLoading(true);
     setError(null);
 
     const chatId = currentChatId ?? uuidv4();
     const userMessageId = uuidv4();
-    let fileDataForApi: ApiFileData | null = null;
+    // let fileDataForApi: ApiFileData | null = null;
     let userMessageContent: Part[] = [];
     let textPart: Part | null = null;
     let voicePart: Part | null = null;
+    let filesForAPI: ApiFileData[] = [];
     let voiceDataForApi: ApiFileData | null = null;
-    let filePart: Part | null = null;
 
     if (trimmedInput) {
       textPart = { text: trimmedInput };
@@ -192,23 +193,20 @@ export default function ChatPage() {
       };
     }
 
-    if (attachedFile) {
-      fileDataForApi = await prepareFileDataForApi(attachedFile.file, appConfig);
-      if (!fileDataForApi) {
-        setError("Error processing file. Please try again.");
-        setIsLoading(false);
-        return;
-      }
-      // Construct filePart
-      filePart = {
-        inlineData:
-        {
-          mimeType: fileDataForApi.mimeType,
-          data: fileDataForApi.base64Data,
-        }
-      };
+    if (attachedFilesExist) {
+      filesForAPI = await prepareFilesDataForApi(attachedFiles, appConfig);
+      filesForAPI.forEach((f) => {
+        userMessageContent.push(
+          {
+            inlineData:
+            {
+              mimeType: f.mimeType,
+              data: f.base64Data,
+            }
+          }
+        );
+      });
 
-      userMessageContent.push(filePart);
     }
 
     const userMessage: Message = {
@@ -216,12 +214,10 @@ export default function ChatPage() {
       role: 'user',
       content: userMessageContent,
       timestamp: Date.now(),
-      ...(attachedFile && {
-        fileInfo: {
-          name: attachedFile.file.name,
-          type: attachedFile.file.type,
-        }
-      }),
+      fileInfos: attachedFiles.map((f) => ({
+        name: f.file.name,
+        type: f.file.type,
+      })),
       ...(voiceDataForApi && {
         voicePrompt: {
           name: voiceDataForApi.name,
@@ -238,7 +234,7 @@ export default function ChatPage() {
       addRecentPrompt(trimmedInput);
     }
     setInput("");
-    setAttachedFile(null);
+    setAttachedFiles([]);
 
     const apiHistory = messages.map(msg => ({
       role: msg.role,
@@ -255,7 +251,7 @@ export default function ChatPage() {
             prompt: trimmedInput,
             voicePrompt: voiceDataForApi,
             history: apiHistory,
-            fileData: fileDataForApi,
+            filesData: filesForAPI,
           }),
       });
 
@@ -316,7 +312,7 @@ export default function ChatPage() {
       setIsLoading(false);
       handleVoicePrompt(null);
     }
-  }, [input, audioBlob, messages, attachedFile, currentChatId, addRecentPrompt]);
+  }, [input, audioBlob, messages, attachedFiles, currentChatId, addRecentPrompt]);
 
   const handleDeletePrompt = useCallback(async (promptIdOrText: string) => {
     try {
@@ -350,7 +346,7 @@ export default function ChatPage() {
     const chatTitle = (typeof finalMessages[0].content === 'string'
       ? finalMessages[0].content.substring(0, 255)
       : finalMessages[0].voicePrompt ? finalMessages[0].voicePrompt.name :
-        finalMessages[0].fileInfo ? finalMessages[0].fileInfo.name : "Untitled Chat");
+        finalMessages[0].fileInfos && finalMessages[0].fileInfos[0] ? finalMessages[0].fileInfos[0].name : "Untitled Chat");
 
     const sessionToSave: ChatSession = {
       id: chatId,
@@ -402,7 +398,7 @@ export default function ChatPage() {
     setAudioBlob(null);
     setError(null);
     setIsLoading(false);
-    setAttachedFile(null);
+    setAttachedFiles([]);
     if (window.innerWidth < 768) setIsSidebarOpen(false);
     console.log("Starting new chat session");
   };
@@ -416,7 +412,7 @@ export default function ChatPage() {
       setInput('');
       setError(null);
       setIsLoading(false);
-      setAttachedFile(null);
+      setAttachedFiles([]);
       if (window.innerWidth < 768) setIsSidebarOpen(false);
     } else {
       // Option 2: Fetch from server if not found (or always fetch for consistency)
@@ -466,11 +462,12 @@ export default function ChatPage() {
     }
   };
 
-  const handleAttachFile = (file: File) => {
-    setAttachedFile({ file });
+  const handleAttachFile = (attachedFile: AttachedFile) => {
+    setAttachedFiles([...attachedFiles, attachedFile]);
   };
-  const handleRemoveFile = () => {
-    setAttachedFile(null);
+
+  const handleRemoveFile = (id: string) => {
+    setAttachedFiles(attachedFiles.filter(v => v.id !== id));
   };
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -531,7 +528,7 @@ export default function ChatPage() {
           onRemoveFile={handleRemoveFile}
           onVoicePrompt={handleVoicePrompt}
           isLoading={isLoading}
-          attachedFile={attachedFile}
+          attachedFiles={attachedFiles}
           auBlob={audioBlob}
           appConfig={appConfig}
         />

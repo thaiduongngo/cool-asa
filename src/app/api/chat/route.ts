@@ -5,27 +5,19 @@ import { Prompt, Part } from '@/lib/types';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { prompt, voicePrompt, history, fileData }: Prompt = body;
+    const { prompt, voicePrompt, history, filesData }: Prompt = body;
+    const filesDataExist = filesData ? filesData.length > 0 ? true : false : false;
 
-    if (!prompt && !fileData && !voicePrompt) {
+    if (!prompt && !filesDataExist && !voicePrompt) {
       return NextResponse.json({ error: 'Prompt or file is required' }, { status: 400 });
     }
 
     // --- Prepare content parts ---
     const userParts: Part[] = [];
 
-    // Add file data first if present
-    if (fileData) {
-      // Validate again on server-side just in case
-      if (!fileData.mimeType || !fileData.base64Data) {
-        return NextResponse.json({ error: 'Invalid file data received' }, { status: 400 });
-      }
-      userParts.push({
-        inlineData: {
-          mimeType: fileData.mimeType,
-          data: fileData.base64Data,
-        },
-      });
+    // Add text prompt if present
+    if (prompt) {
+      userParts.push({ text: prompt });
     }
 
     if (voicePrompt) {
@@ -41,9 +33,19 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Add text prompt if present
-    if (prompt) {
-      userParts.push({ text: prompt });
+    // Add file data first if present
+    if (filesDataExist) {
+      filesData?.forEach((fi) => {
+        if (!fi.mimeType || !fi.base64Data) {
+          return NextResponse.json({ error: 'Invalid file data received' }, { status: 400 });
+        }
+        userParts.push({
+          inlineData: {
+            mimeType: fi.mimeType,
+            data: fi.base64Data,
+          },
+        });
+      });
     }
 
     // --- Start generation stream ---
