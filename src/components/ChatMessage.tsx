@@ -3,25 +3,14 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import { Message, Part } from '@/lib/types';
+import { Message } from '@/lib/types';
+import { getTextForMarkdown } from '@/utils/markdownHelper';
 import { FaUser, FaRobot, FaTrash } from 'react-icons/fa';
 
 interface Props {
   message: Message;
   onDeleteMessage: (messageId: string) => void;
 }
-
-// Helper to extract text content from string or Part[] for Markdown rendering
-const getTextForMarkdown = (content: string | Part[]): string => {
-  if (typeof content === 'string') {
-    return content;
-  }
-  // For Part[], concatenate text from text parts
-  return content
-    .filter(part => 'text' in part && typeof part.text === 'string')
-    .map(part => (part as { text: string }).text) // Type assertion
-    .join(''); // Join text parts, model might send multiple text parts
-};
 
 const ChatMessage: React.FC<Props> = ({ message, onDeleteMessage }) => {
   const isUser = message.role === 'user';
