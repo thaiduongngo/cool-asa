@@ -27,8 +27,8 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
 ## Tech Stack
 
 *   **Frontend:**
-    *   Next.js 14 (App Router)
-    *   React 18
+    *   Next.js 15 (App Router)
+    *   React 19
     *   TypeScript
     *   Tailwind CSS (with `@tailwindcss/typography` for Markdown styling)
 *   **Backend (Next.js API Routes):**

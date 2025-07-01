@@ -342,11 +342,12 @@ export default function ChatPage() {
 
   const saveChatSession = async (chatId: string, finalMessages: Message[]) => {
     if (finalMessages.length === 0) return;
-
-    const chatTitle = (typeof finalMessages[0].content === 'string'
-      ? finalMessages[0].content.substring(0, 255)
-      : finalMessages[0].voicePrompt ? finalMessages[0].voicePrompt.name :
-        finalMessages[0].fileInfos && finalMessages[0].fileInfos[0] ? finalMessages[0].fileInfos[0].name : "Untitled Chat");
+    const chatTitle = (Array.isArray(finalMessages[0].content) && finalMessages[0].content[0]
+      && typeof finalMessages[0].content[0] === 'object'
+      && 'text' in finalMessages[0].content[0]) ? ((finalMessages[0].content[0] as Part).text ?? "").substring(0, 255)
+      : finalMessages[0].voicePrompt ? finalMessages[0].voicePrompt.name
+        : finalMessages[0].fileInfos && finalMessages[0].fileInfos[0] ? finalMessages[0].fileInfos[0].name
+          : "Untitled Chat";
 
     const sessionToSave: ChatSession = {
       id: chatId,
