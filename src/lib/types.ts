@@ -50,7 +50,7 @@ export declare type Part = TextPart | InlineDataPart | FileDataPart;
 export interface Message {
   id: string;
   role: Role;
-  content: string | Part[];
+  content: Part[];
   timestamp: number;
   fileInfos?: {
     name: string;
