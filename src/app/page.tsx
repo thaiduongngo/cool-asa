@@ -39,9 +39,9 @@ export default function ChatPage() {
       }
       const appConfig: AppConfig = await response.json();
       setAppConfig(appConfig);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching config:', err);
-      setError(`Could not load chat history: ${err.message}`);
+      setError(`Could not load chat history: ${err instanceof Error ? err.message : String(err)}`);
     }
   }, []);
 
@@ -58,9 +58,9 @@ export default function ChatPage() {
       }
       const data: RecentPrompt[] = await response.json();
       setRecentPrompts(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching recent prompts:', err);
-      // setError(`Could not load recent prompts: ${err.message}`); // Optional: show error
+      // setError(`Could not load recent prompts: ${err instanceof Error ? err.message : String(err)}`); // Optional: show error
       setRecentPrompts([]); // Default to empty on error
     } finally {
       setIsRecentPromptsLoading(false);
@@ -83,9 +83,9 @@ export default function ChatPage() {
       if (data.length === 0 && !currentChatId) {
         startNewChat(false); // Start a new chat session if history is empty, don't clear if already new
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching chat history:', err);
-      setError(`Could not load chat history: ${err.message}`);
+      setError(`Could not load chat history: ${err instanceof Error ? err.message : String(err)}`);
       setChatHistory([]);
       startNewChat(false);
     } finally {
@@ -158,7 +158,7 @@ export default function ChatPage() {
     const chatId = currentChatId ?? uuidv4();
     const userMessageId = uuidv4();
     // let fileDataForApi: ApiFileData | null = null;
-    let userMessageContent: Part[] = [];
+    const userMessageContent: Part[] = [];
     let textPart: Part | null = null;
     let voicePart: Part | null = null;
     let filesForAPI: ApiFileData[] = [];
@@ -302,9 +302,10 @@ export default function ChatPage() {
         setError("The response stream ended unexpectedly.");
         setMessages(prev => prev.filter(msg => msg.id !== modelMessageId));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Send Message Error:", err);
-      setError(err.message || 'An unexpected error occurred.');
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred.';
+      setError(errorMessage);
       if (!streamEnded) {
         setMessages(prev => prev.filter(msg => msg.role === 'user'));
       }
@@ -382,10 +383,9 @@ export default function ChatPage() {
       });
 
       if (!currentChatId) setCurrentChatId(savedSession.id);
-
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error saving chat session:', err);
-      setError(`Failed to save chat: ${err.message}`);
+      setError(`Failed to save chat: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 
@@ -439,9 +439,10 @@ export default function ChatPage() {
       if (currentChatId === chatId) {
         startNewChat(true);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error deleting chat session:', err);
-      setError(`Failed to delete chat: ${err.message}`);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(`Failed to delete chat: ${errorMessage}`);
     }
   };
 
