@@ -3,7 +3,7 @@ import { redis, RECENT_PROMPTS_KEY, MAX_RECENT_PROMPTS } from '@/lib/redis';
 import { RecentPrompt } from '@/lib/types'; // Assuming RecentPrompt has id and text
 
 // GET /api/prompts - Fetches top N recent prompts
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     await redis.connect().catch(() => { });
     // Get the top N prompt texts from the sorted set (newest first by score)
@@ -15,9 +15,10 @@ export async function GET(req: NextRequest) {
     }));
 
     return NextResponse.json(recentPrompts, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error fetching recent prompts:', error);
-    return NextResponse.json({ error: 'Failed to fetch recent prompts', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch recent prompts', details: message }, { status: 500 });
   }
 }
 
@@ -53,10 +54,10 @@ export async function POST(req: NextRequest) {
     const newPrompt: RecentPrompt = { id: trimmedText, text: trimmedText };
     return NextResponse.json(newPrompt, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error adding recent prompt:', error);
-    // Check for specific Redis errors if necessary
-    return NextResponse.json({ error: 'Failed to add recent prompt', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to add recent prompt', details: message }, { status: 500 });
   }
 }
 
@@ -77,8 +78,9 @@ export async function DELETE(req: NextRequest) {
     } else {
       return NextResponse.json({ message: 'Prompt not found or already deleted' }, { status: 404 });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Error deleting recent prompt:', error);
-    return NextResponse.json({ error: 'Failed to delete recent prompt', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete recent prompt', details: message }, { status: 500 });
   }
 }

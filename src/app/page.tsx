@@ -268,7 +268,7 @@ export default function ChatPage() {
       setMessages(prev => [...prev, {
         id: modelMessageId,
         role: 'model',
-        content: '...',
+        content: [{ text: '...' }],
         timestamp: Date.now()
       }]);
 
@@ -283,14 +283,14 @@ export default function ChatPage() {
           streamEnded = true; break;
         }
         modelResponse += chunk;
-        setMessages(prev => prev.map(msg => msg.id === modelMessageId ? { ...msg, content: modelResponse } : msg));
+        setMessages(prev => prev.map(msg => msg.id === modelMessageId ? { ...msg, content: [{ text: modelResponse }] } : msg));
       }
 
       if (streamEnded && !error) {
         const finalModelMessage: Message = {
           id: modelMessageId,
-          role: 'model', content:
-            modelResponse,
+          role: 'model',
+          content: [{ text: modelResponse }],
           timestamp: Date.now()
         };
 

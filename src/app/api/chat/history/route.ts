@@ -3,7 +3,7 @@ import { redis, CHAT_HISTORY_PREFIX, CHAT_INDEX_KEY, MAX_CHAT_HISTORY } from '@/
 import { ChatSession } from '@/lib/types';
 
 // GET /api/chat/history - Fetches top N recent chat sessions
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     await redis.connect().catch(() => { /* ignore connection errors if already connected */ });
     // Get the top N chat IDs from the sorted set (newest first)
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const results = await pipeline.exec();
 
     const chatSessions: ChatSession[] = results
-      ?.map(([err, data]) => (data ? JSON.parse(data as string) : null))
+      ?.map(([, data]) => (data ? JSON.parse(data as string) : null))
       .filter(session => session !== null) as ChatSession[];
 
     // Ensure they are sorted by lastUpdated (zrevrange should maintain order)
@@ -27,9 +27,9 @@ export async function GET(req: NextRequest) {
     chatSessions.sort((a, b) => b.lastUpdated - a.lastUpdated);
 
     return NextResponse.json(chatSessions, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching chat history:', error);
-    return NextResponse.json({ error: 'Failed to fetch chat history', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch chat history', details: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -83,8 +83,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(sessionToSave, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error saving chat session:', error);
-    return NextResponse.json({ error: 'Failed to save chat session', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save chat session', details: (error as Error).message }, { status: 500 });
   }
 }

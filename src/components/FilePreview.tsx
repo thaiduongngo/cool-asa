@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { AttachedFile } from '@/lib/types';
 import { FaFilePdf, FaFileAudio, FaFileVideo, FaFile, FaTimes, } from 'react-icons/fa';
 
@@ -37,9 +38,16 @@ const FilePreview: React.FC<Props> = ({ attachedFile, onRemove }) => {
 
   return (
     <div className="mt-2 p-2 border border-gray-300 rounded-md bg-gray-50 flex items-center justify-between text-sm">
-      <div className="flex items-center gap-2 overflow-hidden">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
         {isImage && previewUrl ? (
-          <img src={previewUrl} alt="Preview" className="w-10 h-10 object-cover rounded" />
+          <Image
+            src={previewUrl}
+            alt="Preview"
+            width={40}
+            height={40}
+            className="w-10 h-10 object-cover rounded"
+            style={{ objectFit: 'cover', borderRadius: '0.25rem' }}
+          />
         ) : isPdf ? (
           <FaFilePdf className="w-6 h-6 text-red-500 flex-shrink-0" />
         ) : isAudio ? (
@@ -49,7 +57,7 @@ const FilePreview: React.FC<Props> = ({ attachedFile, onRemove }) => {
         ) : (
           <FaFile className="w-6 h-6 text-red-500 flex-shrink-0" />
         )}
-        <span className="text-gray-500 line-clamp-1" title={file.name}>
+        <span className="text-gray-500 line-clamp-1 flex-1 min-w-0" title={file.name}>
           {file.name}
         </span>
         <span className="text-gray-500 text-xs whitespace-nowrap">

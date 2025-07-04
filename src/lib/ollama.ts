@@ -11,7 +11,7 @@ const OPTIONS = {
 }
 
 const generateContentStream = async (contents: Content[]) => {
-  let messages: Message[] = SYSTEM_INSTRUCTION ? [
+  const messages: Message[] = SYSTEM_INSTRUCTION ? [
     {
       role: SYSTEM,
       content: SYSTEM_INSTRUCTION
@@ -19,7 +19,7 @@ const generateContentStream = async (contents: Content[]) => {
   ] : [];
 
   contents.forEach((content: Content) => {
-    let msg = {
+    const msg = {
       role: content.role === MODEL ? ASSISTANT : content.role,
       content: "",
       images: [] as string[],

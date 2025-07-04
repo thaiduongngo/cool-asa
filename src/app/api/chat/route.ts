@@ -120,17 +120,20 @@ export async function POST(req: NextRequest) {
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('API Error:', error);
     // Improved error reporting
     let errorMessage = "Internal Server Error";
     let statusCode = 500;
 
-    if (error.message?.includes('API key not valid')) {
-      errorMessage = "Invalid API Key. Please check your GOOGLE_API_KEY.";
-      statusCode = 401; // Unauthorized
-    } else if (error.message) {
-      errorMessage = error.message;
+    if (typeof error === "object" && error !== null && "message" in error && typeof (error as { message: unknown }).message === "string") {
+      const message = (error as { message: string }).message;
+      if (message.includes('API key not valid')) {
+        errorMessage = "Invalid API Key. Please check your GOOGLE_API_KEY.";
+        statusCode = 401; // Unauthorized
+      } else {
+        errorMessage = message;
+      }
     }
 
     return NextResponse.json({ error: errorMessage }, { status: statusCode });

@@ -62,14 +62,18 @@ const ChatMessage: React.FC<Props> = ({ message, onDeleteMessage }) => {
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[[rehypeKatex, { strict: false }]]}
             components={{
-              a: ({ node, ...props }) => <a className="text-blue-400 hover:underline" {...props} />,
-              pre: ({ node, ...props }) => <pre className="text-red-700 bg-red-200 text-wrap p-2 rounded" {...props} />,
-              code: ({ node, ...props }) => {
-                const { inline, ...rest } = props as any;
+              a: (props) => <a className="text-blue-400 hover:underline" {...props} />,
+              pre: (props) => <pre className="text-red-700 bg-red-200 text-wrap p-2 rounded" {...props} />,
+              code: (props) => {
+                const { inline, className, children, ...rest } = props as React.HTMLAttributes<HTMLElement> & { inline?: boolean };
                 return inline ? (
-                  <code className="bg-red-100 text-red-700 px-1 rounded" {...rest} />
+                  <code className={`bg-red-100 text-red-700 px-1 rounded ${className || ''}`} {...rest}>
+                    {children}
+                  </code>
                 ) : (
-                  <code className="block text-red-700 whitespace-pre-wrap" {...rest} />
+                  <code className={`block text-red-700 whitespace-pre-wrap ${className || ''}`} {...rest}>
+                    {children}
+                  </code>
                 );
               }
             }}

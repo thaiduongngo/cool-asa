@@ -4,7 +4,7 @@ import { ChatSession } from '@/lib/types';
 
 // GET /api/chat/history/[chatId] - Fetches a single chat session
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   context: { params: Promise<{ chatId: string }> }
 ) {
   try {
@@ -21,15 +21,15 @@ export async function GET(
 
     const session: ChatSession = JSON.parse(sessionData);
     return NextResponse.json(session, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching chat session by ID:', error);
-    return NextResponse.json({ error: 'Failed to fetch chat session', details: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: 'Failed to fetch chat session', details: message }, { status: 500 });
   }
 }
 
-// DELETE /api/chat/history/[chatId] - Deletes a chat session
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   context: { params: Promise<{ chatId: string }> }
 ) {
   try {
@@ -53,8 +53,9 @@ export async function DELETE(
 
 
     return NextResponse.json({ message: 'Chat session deleted successfully' }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting chat session:', error);
-    return NextResponse.json({ error: 'Failed to delete chat session', details: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: 'Failed to delete chat session', details: message }, { status: 500 });
   }
 }
