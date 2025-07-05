@@ -1,6 +1,7 @@
 # ASA AI Chatbot
+
 ![alt text](ASA.png "ASA")
-A feature-rich chatbot application, similar to Google's Gemini, built with Next.js (App Router), TypeScript, and Tailwind CSS. It interacts with the Google Gemini API for multimodal chat capabilities, including text and file (image/PDF) inputs, and features real-time response streaming. Chat history is persisted using Redis.
+A feature-rich chatbot application, built with Next.js (App Router), TypeScript, and Tailwind CSS. It interacts with the Google Gemini API or local models for multimodal chat capabilities, including text, audio, and file (image/audio/video/PDF) inputs, and features real-time response streaming. Chat history is persisted using Redis.
 
 ## Features
 
@@ -8,6 +9,7 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
 *   **Real-time Chat Response Streaming:** Messages from the AI model appear token by token.
 *   **Multimodal Input:**
     *   Attach image , audio, video, PDF files to prompts.
+    *   Text and audio prompts.
     *   Uses Google's Gemini model.
     *   Uses OllamaJS https://github.com/ollama/ollama-js to integrate with models locally.
 *   **Markdown Rendering:** Chat messages support Markdown formatting for rich text display.
@@ -36,7 +38,7 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     *   Edge runtime for Gemini API streaming
 *   **AI Model:**
     *   Google Gemini models via `@google/genai` SDK
-    *   Google 
+    *   Local models from Ollama
 *   **Database/Persistence:**
     *   **Redis** (for both chat history and recent prompts) via `ioredis`
 *   **Utilities:**
@@ -46,7 +48,7 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
 
 ## Prerequisites
 
-*   Node.js (v18.x or later recommended)
+*   Node.js (v20.x or later recommended)
 *   npm, yarn, or pnpm
 *   A Google API Key with the Gemini API enabled.
 *   A running Redis instance (local or cloud-based like Upstash).
@@ -106,6 +108,10 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
     ```bash
     docker run -d --name redis -p 6379:6379 redis:<version>
     ```
+    e.g.
+    ```bash
+    docker run -d --name redis -p 6379:6379 redis:latest
+    ```
     https://redis.io/docs/latest/operate/oss_and_stack/install/install-stack/docker/
 
 6.  **Run the development server:**
@@ -136,16 +142,6 @@ A feature-rich chatbot application, similar to Google's Gemini, built with Next.
 *   [ ] Unit and integration tests.
 *   [ ] Pagination for chat history if it grows very large.
 *   [ ] Implement a "Copy to Clipboard" button for code blocks.
-
-## Contributing
-
-Contributions are welcome! If you have suggestions or want to improve the app, feel free to:
-1.  Fork the repository.
-2.  Create a new branch (`git checkout -b feature/your-feature-name`).
-3.  Make your changes.
-4.  Commit your changes (`git commit -m 'Add some feature'`).
-5.  Push to the branch (`git push origin feature/your-feature-name`).
-6.  Open a Pull Request.
 
 ## License
 
