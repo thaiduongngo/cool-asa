@@ -15,6 +15,7 @@ const eslintConfig = [
       extends: ["next/core-web-vitals", "next/typescript"],
       rules: {
         "react-hooks/exhaustive-deps": "off",
+        "@typescript-eslint/no-require-imports": "off",
       },
     })
 ];
