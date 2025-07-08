@@ -122,6 +122,13 @@ A feature-rich chatbot application, built with Next.js (App Router), TypeScript,
     ```
     The application will be available at `http://localhost:3000`.
 
+7.  **Build:**
+    ```bash
+    npm run build
+    # or
+    yarn build
+    ```
+
 ## API Endpoints
 
 *   `POST /api/chat`: Handles chat requests, streams responses from Gemini.
