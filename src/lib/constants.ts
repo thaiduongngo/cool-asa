@@ -1,6 +1,6 @@
 const METADATA = {
   application_name: "ASA",
-  version: "0.0.1",
+  version: "1.0.0",
   description: "ASA AI Chatbot",
   author: "NtD",
 };
