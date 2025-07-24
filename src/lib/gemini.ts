@@ -4,6 +4,7 @@ import {
   HarmBlockThreshold,
   GenerateContentConfig,
   ThinkingConfig,
+  MediaResolution,
 } from '@google/genai';
 import { Content } from '@/lib/types';
 import { SYSTEM_INSTRUCTION } from '@/lib/constants'
@@ -27,7 +28,7 @@ const thinkingConfig = (): ThinkingConfig => {
   if (process.env.INCLUDE_THOUGHTS && process.env.INCLUDE_THOUGHTS.toLowerCase() === "true") {
     return {
       includeThoughts: true,
-      thinkingBudget: Number(process.env.THINKING_BUDGET ?? 8192),
+      thinkingBudget: Number(process.env.THINKING_BUDGET ?? -1),
     };
   } else {
     return {
@@ -66,6 +67,7 @@ const config: GenerateContentConfig = {
   ],
   tools: tools,
   thinkingConfig: thinkingConfig(),
+  mediaResolution: MediaResolution.MEDIA_RESOLUTION_UNSPECIFIED,
 };
 
 const generateContentStream = async (contents: Content[]) => {
