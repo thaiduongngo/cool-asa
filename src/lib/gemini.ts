@@ -5,6 +5,7 @@ import {
   GenerateContentConfig,
   ThinkingConfig,
   MediaResolution,
+  Tool,
 } from '@google/genai';
 import { Content } from '@/lib/types';
 import { SYSTEM_INSTRUCTION } from '@/lib/constants'
@@ -18,10 +19,14 @@ if (!API_KEY) {
 }
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
-
+/*
 const tools = [
   { urlContext: {} },
   { googleSearch: {} },
+];
+*/
+const tools = [
+  { urlContext: {} } as Tool,
 ];
 
 const thinkingConfig = (): ThinkingConfig => {

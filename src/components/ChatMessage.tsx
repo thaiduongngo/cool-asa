@@ -67,9 +67,9 @@ const ChatMessage: React.FC<Props> = ({ message, onDeleteMessage }) => {
               code: ({ ...props }) => {
                 const { inline, ...rest } = props as React.HTMLAttributes<HTMLElement> & { inline?: boolean };
                 return inline ? (
-                  <code className="bg-red-100 text-red-700 px-1 rounded" {...rest} />
+                  <code className="bg-red-100 text-red-700 px-1 rounded font-mono" {...rest} />
                 ) : (
-                  <code className="block text-red-700 whitespace-pre-wrap" {...rest} />
+                  <code className="block text-red-700 whitespace-pre-wrap font-mono" {...rest} />
                 );
               }
             }}

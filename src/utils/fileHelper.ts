@@ -81,4 +81,4 @@ export const getAudioBlobFromUrl = async (url: string): Promise<Blob | null> => 
   }
 }
 
-export const MAX_NUM_ATTACHED = 3;
+export const MAX_NUM_ATTACHED = 5;
