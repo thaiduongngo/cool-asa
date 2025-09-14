@@ -7,7 +7,7 @@ const METADATA = {
 
 export { METADATA }
 
-export const SYSTEM_INSTRUCTION = process.env.SYSTEM_INSTRUCTION;
+export const SYSTEM_INSTRUCTION = process.env.SYSTEM_INSTRUCTION ?? "";
 
 export const GOOGLE = "GOOGLE";
 export const OLLAMA = "OLLAMA";

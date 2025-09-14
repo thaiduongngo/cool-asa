@@ -4,7 +4,7 @@ import { Content, Part, SYSTEM, ASSISTANT, MODEL } from '@/lib/types';
 import { SYSTEM_INSTRUCTION } from '@/lib/constants';
 
 const DEFAULT_MODEL = "qwen3:8b";
-const MODEL_NAME = process.env.OLLAMA_MODEL || DEFAULT_MODEL;
+const MODEL_NAME = process.env.OLLAMA_MODEL ?? DEFAULT_MODEL;
 const OPTIONS = {
   num_ctx: Number(process.env.MAX_OUTPUT_TOKENS ?? 65536),
   temperature: Number(process.env.TEMPERATURE ?? 0),

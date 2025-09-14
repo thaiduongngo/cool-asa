@@ -11,7 +11,7 @@ import { Content } from '@/lib/types';
 import { SYSTEM_INSTRUCTION } from '@/lib/constants'
 
 const DEFAULT_MODEL = "gemini-2.0-flash";
-const MODEL_NAME = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+const MODEL_NAME = process.env.GEMINI_MODEL ?? DEFAULT_MODEL;
 const API_KEY = process.env.GOOGLE_API_KEY;
 
 if (!API_KEY) {
@@ -19,21 +19,23 @@ if (!API_KEY) {
 }
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
-/*
+
 const tools = [
-  { urlContext: {} },
-  { googleSearch: {} },
+  { urlContext: {} } as Tool,
+  { googleSearch: {} } as Tool,
 ];
-*/
+
+/*
 const tools = [
   { urlContext: {} } as Tool,
 ];
+*/
 
 const thinkingConfig = (): ThinkingConfig => {
   if (process.env.INCLUDE_THOUGHTS && process.env.INCLUDE_THOUGHTS.toLowerCase() === "true") {
     return {
       includeThoughts: true,
-      thinkingBudget: Number(process.env.THINKING_BUDGET ?? -1),
+      thinkingBudget: Number(process.env.THINKING_BUDGET ?? 0),
     };
   } else {
     return {
